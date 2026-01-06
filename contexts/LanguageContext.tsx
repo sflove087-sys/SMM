@@ -10,7 +10,7 @@ interface LanguageContextType {
 
 // Create the context with a default value
 const LanguageContext = createContext<LanguageContextType>({
-  language: 'en',
+  language: 'bn',
   setLanguage: () => {},
   t: (key) => key,
 });
@@ -24,7 +24,7 @@ interface LanguageProviderProps {
 
 // Create the provider component
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [language] = useState('en');
+  const [language] = useState('bn');
   const [translations, setTranslations] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,22 +32,23 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     const fetchTranslations = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/locales/en.json`);
+        const response = await fetch(`/locales/bn.json`);
         const data = await response.json();
         setTranslations(data);
       } catch (error) {
-        console.error(`Could not load translations for English`, error);
+        console.error(`Could not load translations for Bengali`, error);
       } finally {
           setIsLoading(false);
       }
     };
     fetchTranslations();
-    document.documentElement.lang = 'en';
-    document.body.classList.add('font-sans');
+    document.documentElement.lang = 'bn';
+    document.body.classList.add('font-bengali');
+    document.body.classList.remove('font-sans');
   }, []);
 
   const setLanguage = (lang: string) => {
-    // Language is fixed to English, so this function does nothing.
+    // Language is fixed to Bengali, so this function does nothing.
   };
 
   const t = useCallback((key: string, options?: { [key: string]: string | number }) => {

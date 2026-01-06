@@ -50,11 +50,15 @@ const MainApp: React.FC<MainAppProps> = ({ user, onLogout, onUserUpdate }) => {
     return (
       <button 
         onClick={() => setActiveView(view)} 
-        className={`flex flex-col items-center justify-center w-full pt-2 pb-1 transition-colors relative ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 hover:text-primary-500'}`}
+        className={`flex flex-col items-center justify-center w-full py-2 transition-colors duration-300 ease-in-out relative ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 hover:text-primary-500'}`}
       >
-        {isActive && <div className="absolute top-0 h-1 w-8 bg-primary-500 rounded-full"></div>}
-        {icon}
-        <span className="text-xs mt-1 font-medium">{label}</span>
+         <div className={`absolute inset-0 h-full w-full flex items-center justify-center transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="h-10 w-20 bg-primary-50 dark:bg-primary-900/40 rounded-full"></div>
+        </div>
+        <div className="relative z-10">
+            {React.cloneElement(icon as React.ReactElement, { size: 24 })}
+        </div>
+        <span className="text-xs mt-1 font-semibold relative z-10">{label}</span>
       </button>
     );
   };
@@ -62,16 +66,16 @@ const MainApp: React.FC<MainAppProps> = ({ user, onLogout, onUserUpdate }) => {
   return (
     <div className="flex flex-col h-screen">
       <Header user={user} onLogout={onLogout} />
-      <main className="flex-grow overflow-y-auto bg-gray-50 dark:bg-gray-900 pb-16">
+      <main className="flex-grow overflow-y-auto bg-gray-50 dark:bg-black pb-16">
         {renderContent()}
       </main>
       {user.userType !== UserType.ADMIN && (
-          <footer className="fixed bottom-0 w-full max-w-sm mx-auto bg-white dark:bg-black border-t dark:border-gray-800 shadow-t-lg">
+          <footer className="fixed bottom-0 w-full max-w-sm mx-auto bg-white/80 dark:bg-black/80 backdrop-blur-sm border-t dark:border-gray-800 shadow-t-lg">
               <nav className="flex justify-around">
-                  <NavItem icon={<Home size={22}/>} label={t('mainApp.home')} view="home" />
-                  <NavItem icon={<History size={22}/>} label={t('mainApp.history')} view="history" />
-                  <NavItem icon={<Bell size={22}/>} label={t('mainApp.inbox')} view="inbox" />
-                  <NavItem icon={<UserIcon size={22}/>} label={t('mainApp.profile')} view="profile" />
+                  <NavItem icon={<Home />} label={t('mainApp.home')} view="home" />
+                  <NavItem icon={<History />} label={t('mainApp.history')} view="history" />
+                  <NavItem icon={<Bell />} label={t('mainApp.inbox')} view="inbox" />
+                  <NavItem icon={<UserIcon />} label={t('mainApp.profile')} view="profile" />
               </nav>
           </footer>
       )}

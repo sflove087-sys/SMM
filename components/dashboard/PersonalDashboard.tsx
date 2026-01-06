@@ -42,12 +42,12 @@ const StatusIndicator: React.FC<{ status: TransactionStatus }> = ({ status }) =>
 }
 
 const ActionButton: React.FC<{icon: React.ReactNode; label: string; onClick?: () => void;}> = ({ icon, label, onClick }) => (
-    <div onClick={onClick} className="flex flex-col items-center justify-center space-y-2 cursor-pointer group w-20">
-        <div className="bg-primary-100 dark:bg-gray-800 text-primary-600 dark:text-primary-300 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-gray-700 transition-colors">
-            {icon}
+    <button onClick={onClick} className="flex flex-col items-center justify-center text-center space-y-2 group w-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 p-4 aspect-square">
+        <div className="text-primary-600 dark:text-primary-300 mb-1">
+            {React.cloneElement(icon as React.ReactElement, { size: 32 })}
         </div>
-        <p className="font-semibold text-xs text-gray-700 dark:text-gray-300 text-center">{label}</p>
-    </div>
+        <p className="font-semibold text-xs text-gray-800 dark:text-gray-200">{label}</p>
+    </button>
 );
 
 
@@ -98,7 +98,7 @@ const PersonalDashboard: React.FC<PersonalDashboardProps> = ({ user, onUserUpdat
 
     return (
         <div className="p-4 space-y-6">
-            <Card className="text-center bg-gradient-to-br from-primary-500 to-primary-700 text-white" onClick={toggleBalance}>
+            <Card className="text-center bg-gradient-to-br from-primary-600 to-primary-800 text-white" onClick={toggleBalance}>
                 <p className="text-sm text-primary-200 mb-1">{t('dashboard.balance')}</p>
                 {isBalanceLoading ? (
                     <div className="flex justify-center items-center h-[36px]">
@@ -117,13 +117,13 @@ const PersonalDashboard: React.FC<PersonalDashboardProps> = ({ user, onUserUpdat
                 )}
             </Card>
 
-            <div className="flex justify-center items-start flex-wrap gap-x-2 gap-y-4">
-                <ActionButton icon={<Send size={28} />} label={t('dashboard.sendMoney')} onClick={() => startFlow(TransactionType.SEND_MONEY)} />
-                <ActionButton icon={<Landmark size={28} />} label={t('dashboard.cashOut')} onClick={() => startFlow(TransactionType.CASH_OUT)} />
-                <ActionButton icon={<SmartphoneCharging size={28} />} label={t('dashboard.mobileRecharge')} onClick={() => startFlow(TransactionType.MOBILE_RECHARGE)} />
-                <ActionButton icon={<ArrowDownLeft size={28} />} label={t('dashboard.cashIn')} onClick={() => startFlow(TransactionType.CASH_IN)} />
+            <div className="grid grid-cols-3 gap-4">
+                <ActionButton icon={<Send />} label={t('dashboard.sendMoney')} onClick={() => startFlow(TransactionType.SEND_MONEY)} />
+                <ActionButton icon={<Landmark />} label={t('dashboard.cashOut')} onClick={() => startFlow(TransactionType.CASH_OUT)} />
+                <ActionButton icon={<SmartphoneCharging />} label={t('dashboard.mobileRecharge')} onClick={() => startFlow(TransactionType.MOBILE_RECHARGE)} />
+                <ActionButton icon={<ArrowDownLeft />} label={t('dashboard.cashIn')} onClick={() => startFlow(TransactionType.CASH_IN)} />
                 <ActionButton 
-                    icon={<QrCode size={28} />} 
+                    icon={<QrCode />} 
                     label={t('dashboard.myQr')} 
                     onClick={() => setIsQrModalOpen(true)} 
                 />
@@ -139,9 +139,10 @@ const PersonalDashboard: React.FC<PersonalDashboardProps> = ({ user, onUserUpdat
                             const isSender = tx.fromUserId === user.id;
                             const displayName = tx.type === TransactionType.MOBILE_RECHARGE ? tx.toUserMobile : (isSender ? tx.toUserName : tx.fromUserName);
                             const displayLabel = tx.type === TransactionType.MOBILE_RECHARGE ? t('transaction.type_MOBILE_RECHARGE') : (isSender ? t('dashboard.to', { name: tx.toUserName }) : t('dashboard.from', { name: tx.fromUserName }));
+                            const borderColor = isSender ? 'border-red-500' : 'border-green-500';
 
                             return (
-                                <Card key={tx.id} className="p-3" onClick={() => setSelectedTransaction(tx)}>
+                                <Card key={tx.id} className={`p-3 border-l-4 ${borderColor}`} onClick={() => setSelectedTransaction(tx)}>
                                     <div className="flex items-center">
                                         <TransactionIcon type={tx.type} isSender={isSender} />
                                         <div className="ml-3 flex-1">

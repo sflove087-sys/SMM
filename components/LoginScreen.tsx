@@ -99,7 +99,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   );
 
   return (
-    <div className="flex flex-col justify-center h-full p-6 bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col justify-center h-full p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
       {view === 'login' && renderLoginView()}
       {view === 'signup' && <SignUpFlow onLogin={onLogin} onShowLogin={() => setView('login')} />}
       {view === 'forgotPin' && <ForgotPinFlow onShowLogin={() => setView('login')} />}

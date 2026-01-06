@@ -1,25 +1,22 @@
 {
   "appName": "ফিনপে",
   "login": {
-    "welcome": "আবার স্বাগতম!",
-    "subtitle": "{appName} এ চালিয়ে যেতে লগইন করুন",
+    "welcome": "স্বাগতম",
+    "subtitle": "{appName}-এ আপনার অ্যাকাউন্টে প্রবেশ করুন",
     "mobilePlaceholder": "মোবাইল নম্বর",
-    "pinPlaceholder": "পিন",
-    "button": "লগ ইন",
-    "forgotPin": "আপনার পিন ভুলে গেছেন?",
-    "signupPrompt": "{appName} এ নতুন?",
-    "signupLink": "অ্যাকাউন্ট তৈরি করুন",
-    "invalidCredentialsError": "অবৈধ মোবাইল নম্বর বা পিন, অথবা অ্যাকাউন্ট ব্লক করা আছে।"
+    "pinPlaceholder": "পিন নম্বর",
+    "button": "লগ ইন করুন",
+    "forgotPin": "পিন ভুলে গেছেন?",
+    "signupPrompt": "{appName}-এ নতুন?",
+    "signupLink": "অ্যাকাউন্ট খুলুন",
+    "invalidCredentialsError": "আপনার মোবাইল নম্বর বা পিন সঠিক নয়, অথবা আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে।"
   },
   "header": {
-    "greeting": "হ্যালো, {name}",
-    "welcome": "আবার স্বাগতম!",
+    "greeting": "নমস্কার, {name}",
+    "welcome": "স্বাগতম!",
     "myProfile": "আমার প্রোফাইল",
     "securitySettings": "নিরাপত্তা সেটিংস",
-    "logout": "লগআউট",
-    "language": "ভাষা",
-    "english": "English",
-    "bengali": "বাংলা"
+    "logout": "লগ আউট"
   },
   "dashboard": {
     "balance": "বর্তমান ব্যালেন্স",
@@ -31,36 +28,36 @@
     "myQr": "আমার QR",
     "recentTransactions": "সাম্প্রতিক লেনদেন",
     "loading": "লোড হচ্ছে...",
-    "noRecentTransactions": "কোন সাম্প্রতিক লেনদেন নেই।",
-    "to": "প্রতি: {name}",
-    "from": "থেকে: {name}"
+    "noRecentTransactions": "কোনো সাম্প্রতিক লেনদেন নেই।",
+    "to": "প্রাপক: {name}",
+    "from": "প্রেরক: {name}"
   },
   "agentDashboard": {
     "balance": "এজেন্ট ব্যালেন্স",
     "cashIn": "ক্যাশ ইন",
-    "verifyCustomer": "গ্রাহক যাচাই করুন",
+    "verifyCustomer": "গ্রাহক যাচাই",
     "todaysSummary": "আজকের সারসংক্ষেপ",
     "totalCashIn": "মোট ক্যাশ ইন",
     "totalCashOut": "মোট ক্যাশ আউট",
-    "verificationNote": "গ্রাহক যাচাইকরণ গ্রাহকের দ্বারা শুরু করা ক্যাশ আউট প্রক্রিয়ার অংশ।",
+    "verificationNote": "গ্রাহক যাচাইকরণ, গ্রাহকের দ্বারা শুরু করা ক্যাশ আউট প্রক্রিয়ার একটি অংশ।",
     "verifyCustomerTitle": "গ্রাহক যাচাই করুন",
-    "verifyCustomerPrompt": "গ্রাহকের অ্যাকাউন্টের বিবরণ যাচাই করতে তার মোবাইল নম্বর লিখুন।",
-    "verifyButton": "যাচাই করুন",
-    "customerDetails": "গ্রাহকের বিবরণ",
+    "verifyCustomerPrompt": "গ্রাহকের অ্যাকাউন্ট যাচাই করতে তার মোবাইল নম্বর দিন।",
+    "verifyButton": "যাচাই",
+    "customerDetails": "গ্রাহকের তথ্য",
     "customerName": "নাম",
     "customerMobile": "মোবাইল",
     "accountStatus": "অ্যাকাউন্টের অবস্থা",
     "statusActive": "সক্রিয়",
     "statusInactive": "নিষ্ক্রিয়",
-    "customerNotFound": "এই মোবাইল নম্বরের কোনো গ্রাহক পাওয়া যায়নি।"
+    "customerNotFound": "এই মোবাইল নম্বরে কোনো গ্রাহক পাওয়া যায়নি।"
   },
   "history": {
-    "title": "হিস্টোরি",
-    "all": "সব",
+    "title": "লেনদেন ইতিহাস",
+    "all": "সমস্ত",
     "sent": "প্রেরিত",
     "received": "প্রাপ্ত",
-    "loading": "হিস্টোরি লোড হচ্ছে...",
-    "noTransactions": "এই ফিল্টারের জন্য কোন লেনদেন পাওয়া যায়নি।"
+    "loading": "ইতিহাস লোড হচ্ছে...",
+    "noTransactions": "এই ফিল্টারে কোনো লেনদেন পাওয়া যায়নি।"
   },
   "transaction": {
     "type_SEND_MONEY": "সেন্ড মানি",
@@ -68,7 +65,7 @@
     "type_CASH_IN": "ক্যাশ ইন",
     "type_MOBILE_RECHARGE": "মোবাইল রিচার্জ",
     "status_SUCCESSFUL": "সফল",
-    "status_PENDING": "বিচারাধীন",
+    "status_PENDING": "অপেক্ষমান",
     "status_FAILED": "ব্যর্থ"
   },
   "txDetailModal": {
@@ -78,13 +75,13 @@
     "type": "ধরন",
     "txId": "লেনদেন আইডি",
     "close": "বন্ধ করুন",
-    "shareReceipt": "রসিদ শেয়ার করুন"
+    "shareReceipt": "রসিদ শেয়ার"
   },
   "qrModal": {
     "title": "আমার QR কোড",
-    "instruction": "অন্যান্য {appName} ব্যবহারকারীদের থেকে টাকা পেতে এই QR কোডটি দেখান।",
-    "generating": "QR কোড তৈরি করা হচ্ছে...",
-    "generationError": "QR কোড তৈরি করতে ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।"
+    "instruction": "অন্য {appName} ব্যবহারকারীর থেকে টাকা গ্রহণ করতে এই QR কোডটি দেখান।",
+    "generating": "QR কোড তৈরি হচ্ছে...",
+    "generationError": "QR কোড তৈরিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।"
   },
   "txFlow": {
     "title_SEND_MONEY": "সেন্ড মানি",
@@ -94,30 +91,30 @@
     "recipientLabel_SEND_MONEY": "প্রাপকের মোবাইল নম্বর",
     "recipientLabel_CASH_OUT": "এজেন্টের মোবাইল নম্বর",
     "recipientLabel_CASH_IN": "গ্রাহকের মোবাইল নম্বর",
-    "recipientLabel_MOBILE_RECHARGE": "রিচার্জ করার জন্য মোবাইল নম্বর",
-    "operatorLabel": "অপারেটর নির্বাচন করুন",
-    "recipientPlaceholder": "লিখুন বা QR কোড স্ক্যান করুন",
+    "recipientLabel_MOBILE_RECHARGE": "যে নম্বরে রিচার্জ করবেন",
+    "operatorLabel": "অপারেটর বাছাই করুন",
+    "recipientPlaceholder": "নম্বর দিন অথবা QR স্ক্যান করুন",
     "amountLabel": "টাকার পরিমাণ (৳)",
-    "availableBalance": "বর্তমান ব্যালেন্স: ৳{balance}",
-    "sendingTo": "পাঠানো হচ্ছে",
-    "pinLabel": "নিশ্চিত করতে আপনার পিন লিখুন",
-    "holdToConfirm": "নিশ্চিত করতে চেপে ধরুন",
-    "incorrectPin": "ভুল পিন। আপনার কাছে আর {attemptsLeft} টি সুযোগ আছে।",
-    "pinLockout": "অনেকবার ভুল চেষ্টার কারণে লেনদেন বাতিল করা হয়েছে।",
+    "availableBalance": "ব্যবহারযোগ্য ব্যালেন্স: ৳{balance}",
+    "sendingTo": "প্রেরণ করা হচ্ছে",
+    "pinLabel": "নিশ্চিত করতে আপনার পিন দিন",
+    "holdToConfirm": "চেপে ধরে নিশ্চিত করুন",
+    "incorrectPin": "পিন সঠিক নয়। আপনার কাছে আর {attemptsLeft}টি সুযোগ আছে।",
+    "pinLockout": "অনেকবার ভুল চেষ্টার কারণে লেনদেন বাতিল হয়েছে।",
     "statusSuccessTitle": "লেনদেন সফল",
-    "statusSuccessMessage": "{recipient}-কে {type} সফল হয়েছে।",
+    "statusSuccessMessage": "{recipient}-কে আপনার {type} সফল হয়েছে।",
     "statusFailedTitle": "লেনদেন ব্যর্থ",
-    "statusFailedMessage": "একটি অজানা ত্রুটি ঘটেছে।",
-    "share": "শেয়ার করুন",
+    "statusFailedMessage": "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে।",
+    "share": "শেয়ার",
     "done": "সম্পন্ন",
-    "tryAgain": "আবার চেষ্টা করুন",
+    "tryAgain": "পুনরায় চেষ্টা করুন",
     "next": "পরবর্তী",
     "confirm": "নিশ্চিত করুন",
-    "cancel": "বাতিল করুন",
-    "loggingStatus_label": "রেকর্ড রাখা",
-    "loggingStatus_LOGGING": "রেকর্ড সিঙ্ক হচ্ছে...",
-    "loggingStatus_SUCCESS": "রেকর্ড সংরক্ষিত",
-    "loggingStatus_ERROR": "সিঙ্ক ব্যর্থ হয়েছে"
+    "cancel": "বাতিল",
+    "loggingStatus_label": "রেকর্ড কিপিং",
+    "loggingStatus_LOGGING": "রেকর্ড সিঙ্ক করা হচ্ছে...",
+    "loggingStatus_SUCCESS": "রেকর্ড সেভ হয়েছে",
+    "loggingStatus_ERROR": "সিঙ্ক ব্যর্থ হয়েছে"
   },
   "cashInFlow": {
     "title": "ক্যাশ ইন অনুরোধ",
@@ -126,63 +123,63 @@
     "instruction": "৳{amount} জমা সম্পন্ন করতে যেকোনো {appName} এজেন্টকে এই QR কোডটি দেখান।"
   },
   "signUpFlow": {
-    "title": "আপনার অ্যাকাউন্ট তৈরি করুন",
-    "subtitle": "{appName} দিয়ে শুরু করা যাক।",
-    "fullName": "পুরো নাম",
-    "email": "ইমেল",
+    "title": "নতুন অ্যাকাউন্ট খুলুন",
+    "subtitle": "{appName}-এ আপনার পথচলা শুরু করুন।",
+    "fullName": "সম্পূর্ণ নাম",
+    "email": "ই-মেইল",
     "setPin": "৪-সংখ্যার পিন সেট করুন",
     "confirmPin": "পিন নিশ্চিত করুন",
-    "continue": "চালিয়ে যান",
-    "otpPrompt": "{medium}-এ পাঠানো ওটিপি লিখুন।",
+    "continue": "এগিয়ে যান",
+    "otpPrompt": "{medium}-এ পাঠানো ওটিপি কোডটি লিখুন।",
     "otpPlaceholder": "ওটিপি লিখুন",
-    "verifyButton": "যাচাই করুন ও অ্যাকাউন্ট তৈরি করুন",
-    "pinMismatchError": "পিন মেলেনি।",
+    "verifyButton": "যাচাই করে অ্যাকাউন্ট খুলুন",
+    "pinMismatchError": "আপনার দেওয়া পিন দুটি মেলেনি।",
     "pinLengthError": "পিন অবশ্যই ৪ সংখ্যার হতে হবে।",
-    "emailRequiredError": "একটি বৈধ ইমেল ঠিকানা লিখুন।",
-    "generatingEmail": "নিরাপদ ইমেল তৈরি করা হচ্ছে...",
-    "checkInboxForOtp": "ওটিপির জন্য আপনার ইনবক্স দেখুন",
+    "emailRequiredError": "অনুগ্রহ করে একটি সঠিক ই-মেইল দিন।",
+    "generatingEmail": "নিরাপদ ই-মেইল তৈরি হচ্ছে...",
+    "checkInboxForOtp": "ওটিপি-র জন্য আপনার ইনবক্স দেখুন",
     "otpEmailSubject": "আপনার {appName} ভেরিফিকেশন কোড",
-    "otpEmailGreeting": "হাই {name},"
+    "otpEmailGreeting": "নমস্কার, {name}"
   },
   "forgotPinFlow": {
-    "title": "আপনার পিন রিসেট করুন",
-    "subtitle": "আপনার অ্যাকাউন্ট পুনরুদ্ধার করতে পদক্ষেপগুলি অনুসরণ করুন।",
-    "mobilePrompt": "আপনার মোবাইল নম্বর লিখুন",
-    "noAccountError": "এই মোবাইল নম্বর দিয়ে কোন অ্যাকাউন্ট পাওয়া যায়নি।",
-    "otpIncorrectError": "আপনি যে ওটিপি লিখেছেন তা ভুল।",
-    "successMessage": "আপনার পিন সফলভাবে রিসেট করা হয়েছে।",
-    "backToLogin": "লগইনে ফিরে যান"
+    "title": "পিন রিসেট করুন",
+    "subtitle": "আপনার অ্যাকাউন্ট পুনরুদ্ধার করতে নিচের ধাপগুলো অনুসরণ করুন।",
+    "mobilePrompt": "আপনার মোবাইল নম্বরটি লিখুন",
+    "noAccountError": "এই মোবাইল নম্বরে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।",
+    "otpIncorrectError": "আপনার দেওয়া ওটিপি সঠিক নয়।",
+    "successMessage": "আপনার পিন সফলভাবে পরিবর্তন করা হয়েছে।",
+    "backToLogin": "লগ ইন পাতায় ফিরে যান"
   },
   "mainApp": {
     "home": "হোম",
-    "history": "হিস্টোরি",
+    "history": "ইতিহাস",
     "inbox": "ইনবক্স",
     "profile": "প্রোফাইল",
     "inboxEmpty": "ইনবক্স খালি।",
-    "profileComingSoon": "প্রোফাইল স্ক্রিন শীঘ্রই আসছে।",
-    "adminNoHistory": "অ্যাডমিনের লেনদেনের কোনো ইতিহাস নেই।"
+    "profileComingSoon": "প্রোফাইল পাতা শীঘ্রই আসছে।",
+    "adminNoHistory": "অ্যাডমিনের কোনো লেনদেন ইতিহাস নেই।"
   },
   "adminDashboard": {
     "title": "অ্যাডমিন প্যানেল",
     "userManagement": "ব্যবহারকারী ব্যবস্থাপনা",
     "systemSettings": "সিস্টেম সেটিংস",
-    "block": "ব্লক",
-    "unblock": "আনব্লক",
+    "block": "ব্লক করুন",
+    "unblock": "আনব্লক করুন",
     "personalDailyLimit": "ব্যক্তিগত দৈনিক সীমা",
     "personalMonthlyLimit": "ব্যক্তিগত মাসিক সীমা",
-    "agentCashHandlingLimit": "এজেন্ট ক্যাশ হ্যান্ডলিং সীমা",
-    "otpRules": "ওটিপি নিয়ম",
-    "saveSettings": "সেটিংস সংরক্ষণ করুন",
+    "agentCashHandlingLimit": "এজেন্ট ক্যাশ সীমা",
+    "otpRules": "ওটিপি নিয়মাবলী",
+    "saveSettings": "সেটিংস সেভ করুন",
     "googleSheetsIntegration": "গুগল শীট ইন্টিগ্রেশন",
-    "appsScriptUrl": "অ্যাপস স্ক্রিপ্ট ওয়েব অ্যাপ URL",
+    "appsScriptUrl": "অ্যাপস স্ক্রিপ্ট URL",
     "connect": "সংযুক্ত করুন",
     "disconnect": "সংযোগ বিচ্ছিন্ন করুন",
-    "status": "স্ট্যাটাস",
+    "status": "অবস্থা",
     "connected": "সংযুক্ত",
-    "notConnected": "সংযুক্ত নয়",
+    "notConnected": "সংযুক্ত নয়",
     "howToGuide": "সেটআপ গাইড দেখুন",
-    "connectionSuccess": "সফলভাবে সংযুক্ত হয়েছে! লেনদেন লগিং এখন সক্রিয়।",
-    "disconnectionSuccess": "সংযোগ বিচ্ছিন্ন সফল হয়েছে। লেনদেন লগিং নিষ্ক্রিয় করা হয়েছে।"
+    "connectionSuccess": "সফলভাবে সংযুক্ত হয়েছে!",
+    "disconnectionSuccess": "সংযোগ বিচ্ছিন্ন হয়েছে।"
   },
   "receipt": {
     "title": "লেনদেনের রসিদ",
@@ -191,17 +188,17 @@
     "to": "প্রাপক"
   },
   "sharing": {
-    "error": "রসিদ শেয়ার করা যায়নি।",
-    "unsupported": "এই ব্রাউজারে শেয়ারিং সমর্থিত নয়।"
+    "error": "রসিদ শেয়ার করা যায়নি।",
+    "unsupported": "এই ব্রাউজারে শেয়ারিং সম্ভব নয়।"
   },
   "profile": {
     "title": "আমার প্রোফাইল",
     "uploadPhoto": "ছবি আপলোড করুন",
-    "name": "পুরো নাম",
+    "name": "সম্পূর্ণ নাম",
     "mobile": "মোবাইল নম্বর",
-    "email": "ইমেল ঠিকানা",
-    "save": "সংরক্ষণ করুন",
-    "saving": "সংরক্ষণ করা হচ্ছে...",
-    "success": "প্রোফাইল সফলভাবে আপডেট করা হয়েছে!"
+    "email": "ই-মেইল",
+    "save": "পরিবর্তন সেভ করুন",
+    "saving": "সেভ হচ্ছে...",
+    "success": "আপনার প্রোফাইল সফলভাবে আপডেট হয়েছে!"
   }
 }
