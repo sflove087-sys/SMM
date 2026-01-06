@@ -54,11 +54,9 @@ const App: React.FC = () => {
 
     const handleLogout = useCallback(() => {
         setCurrentUser(null);
-        sessionStorage.clear();
-        localStorage.clear();
+        sessionStorage.clear(); // Clears user session data.
+        // We no longer clear localStorage to preserve user's language and theme preferences.
         setIsAuthenticated(false);
-        document.documentElement.classList.remove('dark');
-        setIsDarkMode(false);
     }, []);
     
     const refreshUser = useCallback(async () => {

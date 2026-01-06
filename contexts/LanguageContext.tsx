@@ -26,9 +26,11 @@ interface LanguageProviderProps {
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguageState] = useState(localStorage.getItem('language') || 'bn');
   const [translations, setTranslations] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTranslations = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch(`/locales/${language}.json`);
         const data = await response.json();
@@ -41,6 +43,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
            const data = await response.json();
            setTranslations(data);
         }
+      } finally {
+          setIsLoading(false);
       }
     };
     fetchTranslations();
@@ -75,6 +79,14 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
     return text;
   }, [translations]);
+  
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+            <div className="w-16 h-16 border-4 border-t-primary-500 border-gray-200 rounded-full animate-spin"></div>
+        </div>
+    );
+  }
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
