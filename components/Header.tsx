@@ -56,14 +56,6 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
                                 <Shield size={16} className="mr-3" /> {t('header.securitySettings')}
                             </a>
                              <div className="border-t dark:border-gray-700 my-1"></div>
-                             <div className="px-4 pt-2 pb-1 text-xs text-gray-500 dark:text-gray-400">{t('header.language')}</div>
-                                <button onClick={() => setLanguage('en')} className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    {language === 'en' ? <Check size={16} className="mr-3 text-primary-500"/> : <span className="w-7 mr-3"></span>}{t('header.english')}
-                                </button>
-                                <button onClick={() => setLanguage('bn')} className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    {language === 'bn' ? <Check size={16} className="mr-3 text-primary-500"/> : <span className="w-7 mr-3"></span>}{t('header.bengali')}
-                                </button>
-                             <div className="border-t dark:border-gray-700 my-1"></div>
                             <button onClick={onLogout} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <LogOut size={16} className="mr-3" /> {t('header.logout')}
                             </button>

@@ -10,7 +10,7 @@ interface LanguageContextType {
 
 // Create the context with a default value
 const LanguageContext = createContext<LanguageContextType>({
-  language: 'bn',
+  language: 'en',
   setLanguage: () => {},
   t: (key) => key,
 });
@@ -24,7 +24,7 @@ interface LanguageProviderProps {
 
 // Create the provider component
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [language, setLanguageState] = useState(localStorage.getItem('language') || 'bn');
+  const [language] = useState('en');
   const [translations, setTranslations] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,39 +32,22 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     const fetchTranslations = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/locales/${language}.json`);
+        const response = await fetch(`/locales/en.json`);
         const data = await response.json();
         setTranslations(data);
       } catch (error) {
-        console.error(`Could not load translations for ${language}`, error);
-        // Fallback to English if the selected language file is not found
-        if (language !== 'en') {
-           const response = await fetch(`/locales/en.json`);
-           const data = await response.json();
-           setTranslations(data);
-        }
+        console.error(`Could not load translations for English`, error);
       } finally {
           setIsLoading(false);
       }
     };
     fetchTranslations();
-
-    // Set document language and font
-    if (language === 'bn') {
-        document.documentElement.lang = 'bn';
-        document.body.classList.add('font-bengali');
-        document.body.classList.remove('font-sans');
-    } else {
-        document.documentElement.lang = 'en';
-        document.body.classList.add('font-sans');
-        document.body.classList.remove('font-bengali');
-    }
-
-  }, [language]);
+    document.documentElement.lang = 'en';
+    document.body.classList.add('font-sans');
+  }, []);
 
   const setLanguage = (lang: string) => {
-    localStorage.setItem('language', lang);
-    setLanguageState(lang);
+    // Language is fixed to English, so this function does nothing.
   };
 
   const t = useCallback((key: string, options?: { [key: string]: string | number }) => {
