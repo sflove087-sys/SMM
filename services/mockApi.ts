@@ -4,7 +4,7 @@ import { User, Transaction, TransactionType, UserType, AdminSystemSettings, Logg
 // Central Backend Endpoint: All app requests are sent to this single URL.
 // This URL points to a deployed Google Apps Script Web App that acts as the backend.
 // =========================================================================
-export const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyP5XxVY2IswX0yTzHrxOsxYZOCG8qllJAOCYBcKXNv_tV_WYVFFf2DZm0dSMClTC3fDw/exec";
+export const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6PF8l4xrmPTDlW1gPbsEN3MrYPbzLas4EeW2nplZe-RFDA2izzw952ZEdZj2a7AykoQ/exec";
 
 // --- Utility Functions ---
 const getSessionUser = (): User | null => {

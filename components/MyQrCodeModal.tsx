@@ -5,12 +5,7 @@ import { APP_NAME } from '../constants';
 import Logo from './common/Logo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { AlertTriangle } from 'lucide-react';
-
-declare global {
-    interface Window {
-        QRCode: any;
-    }
-}
+import QRCode from 'qrcode';
 
 interface MyQrCodeModalProps {
     user: User;
@@ -27,22 +22,18 @@ const MyQrCodeModal: React.FC<MyQrCodeModalProps> = ({ user, onClose }) => {
         // A small delay to allow the modal to animate in before QR generation
         const timer = setTimeout(() => {
             if (canvasRef.current && user.mobile) {
-                if (typeof window.QRCode === 'undefined') {
-                    console.error('QRCode library is not loaded.');
-                    setError(t('qrModal.libraryLoadError'));
+                QRCode.toCanvas(canvasRef.current, user.mobile, { width: 256, margin: 2 }, (err: any) => {
                     setIsLoading(false);
-                    return;
-                }
-
-                window.QRCode.toCanvas(canvasRef.current, user.mobile, { width: 256, margin: 2 }, (err: any) => {
                     if (err) {
                         console.error("QR Code generation error:", err);
                         setError(t('qrModal.generationError'));
                     } else {
                         setError(null);
                     }
-                    setIsLoading(false);
                 });
+            } else {
+                 setIsLoading(false);
+                 setError(t('qrModal.generationError'));
             }
         }, 100);
         

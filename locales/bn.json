@@ -83,11 +83,8 @@
   "qrModal": {
     "title": "আমার QR কোড",
     "instruction": "অন্যান্য {appName} ব্যবহারকারীদের থেকে টাকা পেতে এই QR কোডটি দেখান।",
-    "generating": "QR কোড তৈরি হচ্ছে...",
-    "generationError": "QR কোড তৈরি করা যায়নি।",
-    "libraryLoadError": "QR লাইব্রেরি লোড হতে ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
-    "errorTitle": "একটি ত্রুটি ঘটেছে",
-    "retryButton": "আবার চেষ্টা করুন"
+    "generating": "QR কোড তৈরি করা হচ্ছে...",
+    "generationError": "QR কোড তৈরি করতে ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।"
   },
   "txFlow": {
     "title_SEND_MONEY": "সেন্ড মানি",

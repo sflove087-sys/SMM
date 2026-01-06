@@ -84,10 +84,7 @@
     "title": "My QR Code",
     "instruction": "Show this QR code to receive money from other {appName} users.",
     "generating": "Generating QR Code...",
-    "generationError": "QR Code could not be generated.",
-    "libraryLoadError": "QR library failed to load. Please try again.",
-    "errorTitle": "An Error Occurred",
-    "retryButton": "Retry"
+    "generationError": "Failed to generate QR code. Please try again."
   },
   "txFlow": {
     "title_SEND_MONEY": "Send Money",

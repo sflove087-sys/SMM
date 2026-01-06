@@ -141,7 +141,7 @@ function handleRegisterUser(payload) {
         monthlyTransactionTotal: 0,
         lastLogin: new Date(),
         deviceId: null,
-        photoBase64: null,
+        photoBase64: null
     };
 
     const newRow = userToSheet(newUser);
@@ -310,9 +310,7 @@ function handleGetCurrentUser(payload) {
   const userRow = findRow(usersSheet, USER_COLS.ID, userId);
   if (!userRow) throw new Error("Current user not found.");
   
-  let user = sheetToUser(userRow.data);
-
-  return user;
+  return sheetToUser(userRow.data);
 }
 
 /** Updates user profile information. */
