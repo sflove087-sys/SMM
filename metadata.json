@@ -1,0 +1,7 @@
+{
+  "name": "Fintech Mobile Banking App",
+  "description": "A full-featured mobile banking application similar to bKash, including Agent and Personal account systems. This app showcases a secure, scalable, and user-friendly interface for financial transactions, built with React and Tailwind CSS.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
