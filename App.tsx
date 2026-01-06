@@ -4,31 +4,29 @@ import { User } from './types';
 import LoginScreen from './components/LoginScreen';
 import MainApp from './components/MainApp';
 import { Moon, Sun } from 'lucide-react';
-import { useLanguage } from './contexts/LanguageContext';
 import { api } from './services/mockApi';
 
 
 const App: React.FC = () => {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(() => {
+        const sessionUser = sessionStorage.getItem('currentUser');
+        try {
+            return sessionUser ? JSON.parse(sessionUser) : null;
+        } catch (e) {
+            console.error("Failed to parse user from session storage", e);
+            sessionStorage.removeItem('currentUser');
+            return null;
+        }
+    });
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const { t } = useLanguage();
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!sessionStorage.getItem('currentUser'));
 
     useEffect(() => {
         const storedTheme = localStorage.getItem('theme');
-        const sessionUser = sessionStorage.getItem('currentUser');
-
         if (storedTheme === 'dark') {
             document.documentElement.classList.add('dark');
             setIsDarkMode(true);
         }
-        
-        if (sessionUser) {
-            setCurrentUser(JSON.parse(sessionUser));
-            setIsAuthenticated(true);
-        }
-        setIsLoading(false); 
     }, []);
 
     const toggleTheme = () => {
@@ -93,15 +91,6 @@ const App: React.FC = () => {
             window.removeEventListener('keypress', resetTimer);
         };
     }, [isAuthenticated, handleLogout]);
-
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-                <div className="w-16 h-16 border-4 border-t-primary-500 border-gray-200 rounded-full animate-spin"></div>
-            </div>
-        );
-    }
 
     return (
         <div className="antialiased text-gray-900 dark:text-gray-200">

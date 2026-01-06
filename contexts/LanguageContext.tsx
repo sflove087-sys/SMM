@@ -69,7 +69,13 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   const t = useCallback((key: string, options?: { [key: string]: string | number }) => {
     const keys = key.split('.');
-    let text = keys.reduce((obj: any, k: string) => (obj && obj[k] !== 'undefined') ? obj[k] : key, translations);
+    let text: any = keys.reduce((obj: any, k: string) => {
+        return (obj && typeof obj[k] !== 'undefined') ? obj[k] : null;
+    }, translations);
+    
+    if (text === null) {
+        text = key; // Fallback to the key itself if not found
+    }
 
     if (options && typeof text === 'string') {
         Object.keys(options).forEach(k => {
