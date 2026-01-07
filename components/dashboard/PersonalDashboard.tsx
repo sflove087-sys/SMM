@@ -26,7 +26,9 @@ const ActionButton: React.FC<{
                 className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 group-hover:shadow-lg" 
                 style={{ backgroundColor: bgColor }}
             >
-                {React.cloneElement(icon as React.ReactElement, { style: { color }, size: 24 })}
+                {/* FIX: The `lucide-react` icon component expects a `color` prop to set its color, not a `style` object. */}
+                {/* FIX: Cast icon to ReactElement<any> to allow passing additional props like 'color' and 'size' without TypeScript errors. */}
+                {React.cloneElement(icon as React.ReactElement<any>, { color, size: 24 })}
             </div>
             <p className="font-semibold text-xs text-gray-700 dark:text-gray-300 h-8 flex items-center justify-center leading-tight">{label}</p>
         </button>

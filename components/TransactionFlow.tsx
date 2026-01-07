@@ -10,73 +10,19 @@ import Logo from './common/Logo';
 import PinInput from './common/PinInput';
 import NumericKeypad from './common/NumericKeypad';
 import { TRANSACTION_PIN_ATTEMPT_LIMIT } from '../constants';
+import QrScanner from './common/QrScanner';
 
 // Add Html5QrcodeScanner to the window object for TypeScript
 declare global {
     interface Window {
-        Html5QrcodeScanner: any;
         htmlToImage: any;
     }
 }
 
-interface QrScannerProps {
-    onSuccess: (decodedText: string) => void;
-    onClose: () => void;
-}
-
-const QrScanner: React.FC<QrScannerProps> = ({ onSuccess, onClose }) => {
-    const { t } = useLanguage();
-    useEffect(() => {
-        if (!window.Html5QrcodeScanner) {
-            console.error("html5-qrcode library not loaded.");
-            return;
-        }
-
-        const html5QrcodeScanner = new window.Html5QrcodeScanner(
-            "qr-reader",
-            { fps: 10, qrbox: { width: 250, height: 250 }, supportedScanTypes: [0] }, // 0 for camera
-            /* verbose= */ false
-        );
-
-        const onScanSuccess = (decodedText: string, decodedResult: any) => {
-            onSuccess(decodedText);
-            html5QrcodeScanner.clear().catch(error => {
-                console.error("Failed to clear scanner on success.", error);
-            });
-        };
-
-        const onScanFailure = (error: any) => {
-            // This callback is called frequently, so we typically ignore it.
-        };
-
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-
-        // Cleanup function to stop the scanner when the component unmounts
-        return () => {
-            // Need to check if getState is a function and if scanner is running
-            if (html5QrcodeScanner && typeof html5QrcodeScanner.getState === 'function' && html5QrcodeScanner.getState() === 2) { // 2 is SCANNING
-                html5QrcodeScanner.clear().catch(error => {
-                    console.error("Failed to clear scanner on cleanup.", error);
-                });
-            }
-        };
-    }, [onSuccess]);
-
-    return (
-        <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center p-4">
-            <div id="qr-reader" className="w-full max-w-sm aspect-square"></div>
-            <button onClick={onClose} className="mt-6 bg-white text-gray-800 py-2 px-6 rounded-lg font-semibold flex items-center space-x-2">
-                <X size={20} />
-                <span>{t('txFlow.cancel')}</span>
-            </button>
-        </div>
-    );
-};
-
-
 interface TransactionFlowProps {
   user: User;
   transactionType: TransactionType;
+  initialRecipientMobile?: string;
   onClose: () => void;
 }
 
@@ -92,9 +38,9 @@ const getUserInitials = (name: string) => {
 };
 
 
-const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType, onClose }) => {
+const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType, initialRecipientMobile = '', onClose }) => {
   const [step, setStep] = useState<FlowStep>('details');
-  const [recipientMobile, setRecipientMobile] = useState('');
+  const [recipientMobile, setRecipientMobile] = useState(initialRecipientMobile);
   const [recipient, setRecipient] = useState<Partial<User> | null>(null);
   const [amount, setAmount] = useState('');
   const [reference, setReference] = useState('');

@@ -20,28 +20,14 @@ export const useLanguage = () => useContext(LanguageContext);
 
 interface LanguageProviderProps {
     children: React.ReactNode;
+    translations: any;
 }
 
 // Create the provider component
-export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children, translations }) => {
   const [language] = useState('bn');
-  const [translations, setTranslations] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-
+  
   useEffect(() => {
-    const fetchTranslations = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/locales/bn.json`);
-        const data = await response.json();
-        setTranslations(data);
-      } catch (error) {
-        console.error(`Could not load translations for Bengali`, error);
-      } finally {
-          setIsLoading(false);
-      }
-    };
-    fetchTranslations();
     document.documentElement.lang = 'bn';
     document.body.classList.add('font-bengali');
     document.body.classList.remove('font-sans');
@@ -58,6 +44,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     }, translations);
     
     if (text === null) {
+        console.warn(`Translation key not found: ${key}`);
         text = key; // Fallback to the key itself if not found
     }
 
@@ -69,14 +56,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
     return text;
   }, [translations]);
-  
-  if (isLoading) {
-    return (
-        <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-            <div className="w-16 h-16 border-4 border-t-primary-500 border-gray-200 rounded-full animate-spin"></div>
-        </div>
-    );
-  }
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

@@ -1,3 +1,4 @@
+
 {
   "appName": "ফিনপে",
   "login": {
@@ -176,7 +177,7 @@
   },
   "mainApp": {
     "home": "হোম",
-    "myFinPay": "আমার ফিনপে",
+    "myFinPay": "আমার অ্যাকাউন্ট",
     "qrScan": "QR স্ক্যান",
     "inbox": "ইনবক্স",
     "history": "ইতিহাস",
