@@ -1,4 +1,4 @@
-import { User, Transaction, TransactionType, UserType, AdminSystemSettings, LoggingStatus } from '../types';
+import { User, Transaction, TransactionType, UserType, AdminSystemSettings, LoggingStatus, DailySummary } from '../types';
 
 // =========================================================================
 // Central Backend Endpoint: All app requests are sent to this single URL.
@@ -99,13 +99,17 @@ export const api = {
         return callApi('getContacts', { recipientType });
     },
 
-    // Agent functions for Request Money
+    // Agent functions
     getPendingRequests: async (): Promise<Transaction[]> => {
         return callApi('getPendingRequests');
     },
 
     updateRequestStatus: async (transactionId: string, status: 'SUCCESSFUL' | 'FAILED', pin?: string): Promise<Transaction> => {
         return callApi('updateRequestStatus', { transactionId, status, pin });
+    },
+
+    getTodaysSummary: async (): Promise<DailySummary> => {
+        return callApi('getTodaysSummary');
     },
 
     // Admin functions

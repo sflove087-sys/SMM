@@ -10,7 +10,7 @@ const AppLoader: React.FC = () => {
     useEffect(() => {
         const loadTranslations = async () => {
             try {
-                const response = await fetch('/locales/bn.json');
+                const response = await fetch('locales/bn.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

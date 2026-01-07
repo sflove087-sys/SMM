@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Transaction, TransactionType } from '../../types';
+import { User, Transaction, TransactionType, DailySummary } from '../../types';
 import Card from '../common/Card';
 import { ArrowDownLeft, ShieldCheck, DollarSign, Sunrise, Sunset, QrCode, BellDot } from 'lucide-react';
 import TransactionFlow from '../TransactionFlow';
@@ -34,27 +34,36 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ user, onUserUpdate }) =
     const [pendingRequests, setPendingRequests] = useState<Transaction[]>([]);
     const [isLoadingRequests, setIsLoadingRequests] = useState(true);
     const [selectedRequest, setSelectedRequest] = useState<Transaction | null>(null);
+    const [summary, setSummary] = useState<DailySummary | null>(null);
+    const [isLoadingSummary, setIsLoadingSummary] = useState(true);
     const { t } = useLanguage();
 
-    const fetchRequests = async () => {
+    const fetchData = async () => {
         setIsLoadingRequests(true);
+        setIsLoadingSummary(true);
         try {
-            const requests = await api.getPendingRequests();
+            const requestsPromise = api.getPendingRequests();
+            const summaryPromise = api.getTodaysSummary();
+            
+            const [requests, summaryData] = await Promise.all([requestsPromise, summaryPromise]);
+            
             setPendingRequests(requests);
+            setSummary(summaryData);
         } catch (error) {
-            console.error("Failed to fetch pending requests", error);
+            console.error("Failed to fetch agent dashboard data", error);
         } finally {
             setIsLoadingRequests(false);
+            setIsLoadingSummary(false);
         }
     };
     
     useEffect(() => {
-        fetchRequests();
+        fetchData();
     }, [user.id]);
 
     const handleRequestUpdate = async () => {
         setSelectedRequest(null);
-        await fetchRequests();
+        await fetchData();
         await onUserUpdate(); // Refresh balance
     };
 
@@ -131,21 +140,27 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ user, onUserUpdate }) =
 
             <Card>
                 <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">{t('agentDashboard.todaysSummary')}</h3>
-                <div className="flex justify-around text-center">
-                    <div className="space-y-1">
-                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                           <Sunrise size={14} className="mr-1 text-green-500"/> {t('agentDashboard.totalCashIn')}
-                        </p>
-                        <p className="text-lg font-bold text-green-500">{formatCurrency(25000)}</p>
+                 {isLoadingSummary || !summary ? (
+                     <div className="text-center p-4">{t('dashboard.loading')}</div>
+                ) : (
+                    <div className="flex justify-around text-center">
+                        <div className="space-y-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                               <Sunrise size={14} className="mr-1 text-green-500"/> {t('agentDashboard.totalCashIn')}
+                            </p>
+                            <p className="text-lg font-bold text-green-500">{formatCurrency(summary.totalCashInAmount)}</p>
+                            <p className="text-xs text-gray-400">{t('agentDashboard.transactionCount', {count: summary.totalCashInCount})}</p>
+                        </div>
+                         <div className="border-l dark:border-gray-700"></div>
+                        <div className="space-y-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                               <Sunset size={14} className="mr-1 text-red-500"/> {t('agentDashboard.totalCashOut')}
+                            </p>
+                            <p className="text-lg font-bold text-red-500">{formatCurrency(summary.totalCashOutAmount)}</p>
+                             <p className="text-xs text-gray-400">{t('agentDashboard.transactionCount', {count: summary.totalCashOutCount})}</p>
+                        </div>
                     </div>
-                     <div className="border-l dark:border-gray-700"></div>
-                    <div className="space-y-1">
-                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                           <Sunset size={14} className="mr-1 text-red-500"/> {t('agentDashboard.totalCashOut')}
-                        </p>
-                        <p className="text-lg font-bold text-red-500">{formatCurrency(18500)}</p>
-                    </div>
-                </div>
+                )}
             </Card>
 
              <p className="text-xs text-center text-gray-500 dark:text-gray-400 px-4">

@@ -58,3 +58,10 @@ export interface AdminSystemSettings {
     agentCashHandlingLimit: number;
     otpRules: string;
 }
+
+export interface DailySummary {
+    totalCashInAmount: number;
+    totalCashInCount: number;
+    totalCashOutAmount: number;
+    totalCashOutCount: number;
+}

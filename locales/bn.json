@@ -48,6 +48,7 @@
     "todaysSummary": "আজকের সারসংক্ষেপ",
     "totalCashIn": "মোট ক্যাশ ইন",
     "totalCashOut": "মোট ক্যাশ আউট",
+    "transactionCount": "{count}টি লেনদেন",
     "verificationNote": "গ্রাহক যাচাইকরণ, গ্রাহকের দ্বারা শুরু করা ক্যাশ আউট প্রক্রিয়ার একটি অংশ।",
     "verifyCustomerTitle": "গ্রাহক যাচাই করুন",
     "verifyCustomerPrompt": "গ্রাহকের অ্যাকাউন্ট যাচাই করতে তার মোবাইল নম্বর দিন।",

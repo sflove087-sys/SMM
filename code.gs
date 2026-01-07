@@ -54,11 +54,13 @@ function doPost(e) {
       case 'getContacts':
         return createSuccessResponse(handleGetContacts(payload));
       
-      // AGENT - REQUEST MONEY
+      // AGENT
       case 'getPendingRequests':
         return createSuccessResponse(handleGetPendingRequests(payload));
       case 'updateRequestStatus':
         return createSuccessResponse(handleUpdateRequestStatus(payload));
+      case 'getTodaysSummary':
+        return createSuccessResponse(handleGetTodaysSummary(payload));
 
       // ADMIN
       case 'getAllUsers':
@@ -399,6 +401,43 @@ function handleUpdateRequestStatus(payload) {
   
   const updatedTx = sheetToTransaction(txSheet.getRange(txRow.row, 1, 1, txSheet.getLastColumn()).getValues()[0]);
   return updatedTx;
+}
+
+/** Gets the daily summary for an agent. */
+function handleGetTodaysSummary(payload) {
+  const { userId } = payload; // Agent's ID
+  const sheet = getSheet(TRANSACTIONS_SHEET_NAME);
+  const data = sheet.getDataRange().getValues();
+  data.shift();
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let totalCashInAmount = 0;
+  let totalCashInCount = 0;
+  let totalCashOutAmount = 0;
+  let totalCashOutCount = 0;
+
+  data.map(sheetToTransaction)
+    .filter(function(tx) {
+      const txDate = new Date(tx.timestamp);
+      txDate.setHours(0, 0, 0, 0);
+      return txDate.getTime() === today.getTime() && tx.status === 'SUCCESSFUL';
+    })
+    .forEach(function(tx) {
+      // 'CASH_IN': Agent's balance decreases. Agent is 'from'. Agent takes cash from customer.
+      if (tx.type === 'CASH_IN' && tx.fromUserId === userId) {
+        totalCashInAmount += tx.amount;
+        totalCashInCount++;
+      }
+      // 'CASH_OUT': Agent's balance increases. Agent is 'to'. Agent gives cash to customer.
+      if (tx.type === 'CASH_OUT' && tx.toUserId === userId) {
+        totalCashOutAmount += tx.amount;
+        totalCashOutCount++;
+      }
+    });
+
+  return { totalCashInAmount: totalCashInAmount, totalCashInCount: totalCashInCount, totalCashOutAmount: totalCashOutAmount, totalCashOutCount: totalCashOutCount };
 }
 
 
