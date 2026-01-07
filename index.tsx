@@ -1,52 +1,240 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { LanguageProvider } from './contexts/LanguageContext';
 
-const AppLoader: React.FC = () => {
-    const [translations, setTranslations] = useState<any | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const loadTranslations = async () => {
-            try {
-                const response = await fetch('locales/bn.json');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setTranslations(data);
-            } catch (e: any) {
-                console.error("Failed to load translations:", e);
-                setError("Could not load application language file. Please try again later.");
-            }
-        };
-
-        loadTranslations();
-    }, []);
-
-    if (error) {
-        return (
-            <div className="flex flex-col items-center justify-center h-screen bg-gray-50 dark:bg-gray-950 text-red-500 p-4 text-center">
-                <h2 className="text-lg font-semibold">Application Error</h2>
-                <p>{error}</p>
-            </div>
-        );
-    }
-
-    if (!translations) {
-        return (
-            <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
-                <div className="w-16 h-16 border-4 border-t-primary-500 border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
-            </div>
-        );
-    }
-
-    return (
-        <LanguageProvider translations={translations}>
-            <App />
-        </LanguageProvider>
-    );
+// By embedding the translations directly, we eliminate the need for a network request,
+// which resolves the "Could not load application language file" error permanently.
+const translations = {
+  "appName": "ফিনপে",
+  "login": {
+    "welcome": "স্বাগতম",
+    "subtitle": "{appName}-এ আপনার অ্যাকাউন্টে প্রবেশ করুন",
+    "mobilePlaceholder": "মোবাইল নম্বর",
+    "pinPlaceholder": "পিন নম্বর",
+    "button": "লগ ইন করুন",
+    "forgotPin": "পিন ভুলে গেছেন?",
+    "signupPrompt": "{appName}-এ নতুন?",
+    "signupLink": "অ্যাকাউন্ট খুলুন",
+    "invalidCredentialsError": "আপনার মোবাইল নম্বর বা পিন সঠিক নয়, অথবা আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে।"
+  },
+  "header": {
+    "greeting": "{name}",
+    "welcome": "স্বাগতম!",
+    "myProfile": "আমার প্রোফাইল",
+    "securitySettings": "নিরাপত্তা সেটিংস",
+    "logout": "লগ আউট",
+    "checkBalance": "ব্যালেন্স দেখুন"
+  },
+  "dashboard": {
+    "balance": "বর্তমান ব্যালেন্স",
+    "tapForBalance": "ব্যালেন্স দেখতে ট্যাপ করুন",
+    "sendMoney": "সেন্ড মানি",
+    "cashOut": "ক্যাশ আউট",
+    "mobileRecharge": "মোবাইল রিচার্জ",
+    "addMoney": "অ্যাড মানি",
+    "payment": "পেমেন্ট",
+    "payBill": "পে বিল",
+    "savings": "সেভিংস",
+    "loan": "লোন",
+    "myQr": "আমার QR",
+    "requestMoney": "টাকা অনুরোধ",
+    "recentTransactions": "সাম্প্রতিক লেনদেন",
+    "loading": "লোড হচ্ছে...",
+    "noRecentTransactions": "কোনো সাম্প্রতিক লেনদেন নেই।",
+    "to": "প্রাপক: {name}",
+    "from": "প্রেরক: {name}",
+    "seeMore": "আরো দেখুন",
+    "quickFeatures": "কুইক ফিচারসমূহ"
+  },
+  "agentDashboard": {
+    "balance": "এজেন্ট ব্যালেন্স",
+    "cashIn": "ক্যাশ ইন",
+    "verifyCustomer": "গ্রাহক যাচাই",
+    "todaysSummary": "আজকের সারসংক্ষেপ",
+    "totalCashIn": "মোট ক্যাশ ইন",
+    "totalCashOut": "মোট ক্যাশ আউট",
+    "transactionCount": "{count}টি লেনদেন",
+    "verificationNote": "গ্রাহক যাচাইকরণ, গ্রাহকের দ্বারা শুরু করা ক্যাশ আউট প্রক্রিয়ার একটি অংশ।",
+    "verifyCustomerTitle": "গ্রাহক যাচাই করুন",
+    "verifyCustomerPrompt": "গ্রাহকের অ্যাকাউন্ট যাচাই করতে তার মোবাইল নম্বর দিন।",
+    "verifyButton": "যাচাই",
+    "customerDetails": "গ্রাহকের তথ্য",
+    "customerName": "নাম",
+    "customerMobile": "মোবাইল",
+    "accountStatus": "অ্যাকাউন্টের অবস্থা",
+    "statusActive": "সক্রিয়",
+    "statusInactive": "নিষ্ক্রিয়",
+    "customerNotFound": "এই মোবাইল নম্বরে কোনো গ্রাহক পাওয়া যায়নি।",
+    "pendingRequests": "অপেক্ষমান অনুরোধ",
+    "noPendingRequests": "কোনো অপেক্ষমান অনুরোধ নেই।",
+    "approve": "অনুমোদন",
+    "decline": "বাতিল",
+    "approvalTitle": "অনুরোধ অনুমোদন",
+    "approvalConfirm": "আপনি কি {customer}-এর ৳{amount} টাকার অনুরোধটি অনুমোদন করতে চান?",
+    "declineConfirm": "আপনি কি এই অনুরোধটি বাতিল করতে চান?",
+    "approvalSuccess": "অনুরোধ সফলভাবে অনুমোদিত হয়েছে।",
+    "declineSuccess": "অনুরোধ বাতিল করা হয়েছে।"
+  },
+  "history": {
+    "title": "লেনদেন ইতিহাস",
+    "all": "সমস্ত",
+    "sent": "প্রেরিত",
+    "received": "প্রাপ্ত",
+    "loading": "ইতিহাস লোড হচ্ছে...",
+    "noTransactions": "এই ফিল্টারে কোনো লেনদেন পাওয়া যায়নি।"
+  },
+  "transaction": {
+    "type_SEND_MONEY": "সেন্ড মানি",
+    "type_CASH_OUT": "ক্যাশ আউট",
+    "type_CASH_IN": "ক্যাশ ইন",
+    "type_MOBILE_RECHARGE": "মোবাইল রিচার্জ",
+    "type_REQUEST_MONEY": "টাকা অনুরোধ",
+    "status_SUCCESSFUL": "সফল",
+    "status_PENDING": "অপেক্ষমান",
+    "status_FAILED": "ব্যর্থ",
+    "requestTo": "অনুরোধ গেছে {name}-কে"
+  },
+  "txDetailModal": {
+    "title": "লেনদেনের বিবরণ",
+    "details": "বিবরণ",
+    "dateTime": "তারিখ ও সময়",
+    "type": "ধরন",
+    "txId": "লেনদেন আইডি",
+    "close": "বন্ধ করুন",
+    "shareReceipt": "রসিদ শেয়ার"
+  },
+  "qrModal": {
+    "title": "আমার QR কোড",
+    "instruction": "অন্য {appName} ব্যবহারকারীর থেকে টাকা গ্রহণ করতে এই QR কোডটি দেখান।",
+    "generating": "QR কোড তৈরি হচ্ছে...",
+    "generationError": "QR কোড তৈরিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।"
+  },
+  "txFlow": {
+    "title_SEND_MONEY": "সেন্ড মানি",
+    "title_CASH_OUT": "ক্যাশ আউট",
+    "title_CASH_IN": "ক্যাশ ইন",
+    "title_MOBILE_RECHARGE": "মোবাইল রিচার্জ",
+    "title_REQUEST_MONEY": "অ্যাড মানি",
+    "recipientLabel_SEND_MONEY": "প্রাপকের মোবাইল নম্বর",
+    "recipientLabel_CASH_OUT": "এজেন্টের মোবাইল নম্বর",
+    "recipientLabel_CASH_IN": "গ্রাহকের মোবাইল নম্বর",
+    "recipientLabel_MOBILE_RECHARGE": "যে নম্বরে রিচার্জ করবেন",
+    "recipientLabel_REQUEST_MONEY": "এজেন্টের মোবাইল নম্বর (যার কাছে অনুরোধ করবেন)",
+    "operatorLabel": "অপারেটর বাছাই করুন",
+    "recipientPlaceholder": "নম্বর দিন অথবা QR স্ক্যান করুন",
+    "amountLabel": "টাকার পরিমাণ (৳)",
+    "referenceOptional": "রেফারেন্স (ঐচ্ছিক)",
+    "availableBalance": "ব্যবহারযোগ্য ব্যালেন্স: ৳{balance}",
+    "sendingTo": "প্রেরণ করা হচ্ছে",
+    "pinLabel": "নিশ্চিত করতে আপনার পিন দিন",
+    "holdToConfirm": "চেপে ধরে নিশ্চিত করুন",
+    "incorrectPin": "পিন সঠিক নয়। আপনার কাছে আর {attemptsLeft}টি সুযোগ আছে।",
+    "pinLockout": "অনেকবার ভুল চেষ্টার কারণে লেনদেন বাতিল হয়েছে।",
+    "statusSuccessTitle": "লেনদেন সফল",
+    "statusSuccessMessage": "{recipient}-কে আপনার {type} সফল হয়েছে।",
+    "statusFailedTitle": "লেনদেন ব্যর্থ",
+    "statusFailedMessage": "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে।",
+    "statusPendingTitle": "অনুরোধ পাঠানো হয়েছে",
+    "statusPendingMessage": "{recipient}-কে আপনার ৳{amount} টাকার অনুরোধ সফলভাবে পাঠানো হয়েছে। অনুমোদনের জন্য অপেক্ষা করুন।",
+    "share": "শেয়ার",
+    "done": "সম্পন্ন",
+    "tryAgain": "পুনরায় চেষ্টা করুন",
+    "next": "পরবর্তী",
+    "confirm": "নিশ্চিত করুন",
+    "cancel": "বাতিল",
+    "loggingStatus_label": "রেকর্ড কিপিং",
+    "loggingStatus_LOGGING": "রেকর্ড সিঙ্ক করা হচ্ছে...",
+    "loggingStatus_SUCCESS": "রেকর্ড সেভ হয়েছে",
+    "loggingStatus_ERROR": "সিঙ্ক ব্যর্থ হয়েছে"
+  },
+  "cashInFlow": {
+    "title": "ক্যাশ ইন অনুরোধ",
+    "amountLabel": "জমা করার পরিমাণ লিখুন",
+    "generateQrButton": "ডিপোজিট QR কোড তৈরি করুন",
+    "instruction": "৳{amount} জমা সম্পন্ন করতে যেকোনো {appName} এজেন্টকে এই QR কোডটি দেখান।"
+  },
+  "signUpFlow": {
+    "title": "নতুন অ্যাকাউন্ট খুলুন",
+    "subtitle": "{appName}-এ আপনার পথচলা শুরু করুন।",
+    "fullName": "সম্পূর্ণ নাম",
+    "email": "ই-মেইল",
+    "setPin": "৪-সংখ্যার পিন সেট করুন",
+    "confirmPin": "পিন নিশ্চিত করুন",
+    "continue": "এগিয়ে যান",
+    "otpPrompt": "{medium}-এ পাঠানো ওটিপি কোডটি লিখুন।",
+    "otpPlaceholder": "ওটিপি লিখুন",
+    "verifyButton": "যাচাই করে অ্যাকাউন্ট খুলুন",
+    "pinMismatchError": "আপনার দেওয়া পিন দুটি মেলেনি।",
+    "pinLengthError": "পিন অবশ্যই ৪ সংখ্যার হতে হবে।",
+    "emailRequiredError": "অনুগ্রহ করে একটি সঠিক ই-মেইল দিন।",
+    "generatingEmail": "নিরাপদ ই-মেইল তৈরি হচ্ছে...",
+    "checkInboxForOtp": "ওটিপি-র জন্য আপনার ইনবক্স দেখুন",
+    "otpEmailSubject": "আপনার {appName} ভেরিফিকেশন কোড",
+    "otpEmailGreeting": "নমস্কার, {name}"
+  },
+  "forgotPinFlow": {
+    "title": "পিন রিসেট করুন",
+    "subtitle": "আপনার অ্যাকাউন্ট পুনরুদ্ধার করতে নিচের ধাপগুলো অনুসরণ করুন।",
+    "mobilePrompt": "আপনার মোবাইল নম্বরটি লিখুন",
+    "noAccountError": "এই মোবাইল নম্বরে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।",
+    "otpIncorrectError": "আপনার দেওয়া ওটিপি সঠিক নয়।",
+    "successMessage": "আপনার পিন সফলভাবে পরিবর্তন করা হয়েছে।",
+    "backToLogin": "লগ ইন পাতায় ফিরে যান"
+  },
+  "mainApp": {
+    "home": "হোম",
+    "myFinPay": "আমার অ্যাকাউন্ট",
+    "qrScan": "QR স্ক্যান",
+    "inbox": "ইনবক্স",
+    "history": "ইতিহাস",
+    "profile": "প্রোফাইল",
+    "inboxEmpty": "ইনবক্স খালি।",
+    "profileComingSoon": "প্রোফাইল পাতা শীঘ্রই আসছে।",
+    "adminNoHistory": "অ্যাডমিনের কোনো লেনদেন ইতিহাস নেই।"
+  },
+  "adminDashboard": {
+    "title": "অ্যাডমিন প্যানেল",
+    "userManagement": "ব্যবহারকারী ব্যবস্থাপনা",
+    "systemSettings": "সিস্টেম সেটিংস",
+    "block": "ব্লক করুন",
+    "unblock": "আনব্লক করুন",
+    "personalDailyLimit": "ব্যক্তিগত দৈনিক সীমা",
+    "personalMonthlyLimit": "ব্যক্তিগত মাসিক সীমা",
+    "agentCashHandlingLimit": "এজেন্ট ক্যাশ সীমা",
+    "otpRules": "ওটিপি নিয়মাবলী",
+    "saveSettings": "সেটিংস সেভ করুন",
+    "googleSheetsIntegration": "গুগল শীট ইন্টিগ্রেশন",
+    "appsScriptUrl": "অ্যাপস স্ক্রিপ্ট URL",
+    "connect": "সংযুক্ত করুন",
+    "disconnect": "সংযোগ বিচ্ছিন্ন করুন",
+    "status": "অবস্থা",
+    "connected": "সংযুক্ত",
+    "notConnected": "সংযুক্ত নয়",
+    "howToGuide": "সেটআপ গাইড দেখুন",
+    "connectionSuccess": "সফলভাবে সংযুক্ত হয়েছে!",
+    "disconnectionSuccess": "সংযোগ বিচ্ছিন্ন হয়েছে।"
+  },
+  "receipt": {
+    "title": "লেনদেনের রসিদ",
+    "successful": "লেনদেন সফল",
+    "from": "প্রেরক",
+    "to": "প্রাপক"
+  },
+  "sharing": {
+    "error": "রসিদ শেয়ার করা যায়নি।",
+    "unsupported": "এই ব্রাউজারে শেয়ারিং সম্ভব নয়।"
+  },
+  "profile": {
+    "title": "আমার প্রোফাইল",
+    "uploadPhoto": "ছবি আপলোড করুন",
+    "name": "সম্পূর্ণ নাম",
+    "mobile": "মোবাইল নম্বর",
+    "email": "ই-মেইল",
+    "save": "পরিবর্তন সেভ করুন",
+    "saving": "সেভ হচ্ছে...",
+    "success": "আপনার প্রোফাইল সফলভাবে আপডেট হয়েছে!"
+  }
 };
 
 const rootElement = document.getElementById('root');
@@ -57,6 +245,8 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <AppLoader />
+    <LanguageProvider translations={translations}>
+        <App />
+    </LanguageProvider>
   </React.StrictMode>
 );

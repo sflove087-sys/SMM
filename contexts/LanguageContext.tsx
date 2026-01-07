@@ -50,7 +50,9 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children, tr
 
     if (options && typeof text === 'string') {
         Object.keys(options).forEach(k => {
-            text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(options[k]));
+            // Using replaceAll is safer than new RegExp() with dynamic strings.
+            // It avoids issues with special regex characters in keys and the "Invalid flags" error.
+            text = text.replaceAll(`{${k}}`, String(options[k]));
         });
     }
 
