@@ -50,9 +50,10 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children, tr
 
     if (options && typeof text === 'string') {
         Object.keys(options).forEach(k => {
-            // Using replaceAll is safer than new RegExp() with dynamic strings.
-            // It avoids issues with special regex characters in keys and the "Invalid flags" error.
-            text = text.replaceAll(`{${k}}`, String(options[k]));
+            // Using `split` and `join` for maximum browser compatibility,
+            // as `replaceAll` might not be available in older browser environments (like older WebViews).
+            // This achieves the same result of global replacement more robustly.
+            text = text.split(`{${k}}`).join(String(options[k]));
         });
     }
 
