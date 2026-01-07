@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { User } from '../types';
 import { api } from '../services/mockApi';
@@ -58,8 +57,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onUserUpdate }) => 
 
   return (
     <div className="p-4 space-y-6">
-      <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t('profile.title')}</h2>
-      
       <Card className="flex flex-col items-center">
         <div className="relative mb-4">
             <div className="w-24 h-24 bg-primary-100 dark:bg-gray-700 text-primary-600 dark:text-primary-300 rounded-full flex items-center justify-center font-bold text-4xl overflow-hidden">

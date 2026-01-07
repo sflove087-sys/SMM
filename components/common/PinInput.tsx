@@ -4,9 +4,10 @@ interface PinInputProps {
   length?: number;
   value: string;
   isShaking?: boolean;
+  onClick?: () => void;
 }
 
-const PinInput: React.FC<PinInputProps> = ({ length = 4, value, isShaking = false }) => {
+const PinInput: React.FC<PinInputProps> = ({ length = 4, value, isShaking = false, onClick }) => {
   const dots = [];
   for (let i = 0; i < length; i++) {
     const isFilled = i < value.length;
@@ -19,8 +20,10 @@ const PinInput: React.FC<PinInputProps> = ({ length = 4, value, isShaking = fals
       ></div>
     );
   }
+  
+  const containerClasses = `flex justify-center items-center space-x-4 my-4 h-8 ${isShaking ? 'animate-shake' : ''} ${onClick ? 'cursor-pointer' : ''}`;
 
-  return <div className={`flex justify-center items-center space-x-4 my-4 h-8 ${isShaking ? 'animate-shake' : ''}`}>{dots}</div>;
+  return <div onClick={onClick} className={containerClasses}>{dots}</div>;
 };
 
 export default PinInput;

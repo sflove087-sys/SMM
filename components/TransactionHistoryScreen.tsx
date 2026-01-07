@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, Transaction, TransactionType, TransactionStatus } from '../types';
 import { api } from '../services/mockApi';
@@ -11,13 +10,24 @@ interface TransactionHistoryScreenProps {
   user: User;
 }
 
-const TransactionIcon: React.FC<{ type: TransactionType, isSender: boolean }> = ({ type, isSender }) => {
+const isMoneyOutgoing = (tx: Transaction, userId: string): boolean => {
+    if (tx.type === TransactionType.REQUEST_MONEY) {
+        // For a successful request, money goes FROM the 'toUser' (agent), so it's outgoing for the agent.
+        return tx.toUserId === userId; 
+    }
+    // For all other types, money goes FROM the 'fromUser'
+    return tx.fromUserId === userId;
+}
+
+
+const TransactionIcon: React.FC<{ type: TransactionType, isOutgoing: boolean }> = ({ type, isOutgoing }) => {
     const commonClasses = "w-10 h-10 rounded-full flex items-center justify-center";
-    const iconColor = isSender ? 'text-red-500' : 'text-green-500';
-    const bgColor = isSender ? 'bg-red-100 dark:bg-red-900/50' : 'bg-green-100 dark:bg-green-900/50';
+    const iconColor = isOutgoing ? 'text-red-500' : 'text-green-500';
+    const bgColor = isOutgoing ? 'bg-red-100 dark:bg-red-900/50' : 'bg-green-100 dark:bg-green-900/50';
 
     switch (type) {
         case TransactionType.SEND_MONEY:
+        case TransactionType.REQUEST_MONEY:
             return <div className={`${commonClasses} ${bgColor}`}><ArrowUpRight size={20} className={iconColor} /></div>;
         case TransactionType.CASH_OUT:
              return <div className={`${commonClasses} ${bgColor}`}><ArrowDownLeft size={20} className={iconColor} /></div>;
@@ -63,8 +73,8 @@ const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> = ({ use
 
   const filteredTransactions = transactions.filter(tx => {
     if (filter === 'ALL') return true;
-    if (filter === 'SENT') return tx.fromUserId === user.id;
-    if (filter === 'RECEIVED') return tx.toUserId === user.id;
+    if (filter === 'SENT') return isMoneyOutgoing(tx, user.id);
+    if (filter === 'RECEIVED') return !isMoneyOutgoing(tx, user.id);
     return tx.type === filter;
   });
   
@@ -72,8 +82,7 @@ const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> = ({ use
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex justify-between items-center px-2">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t('history.title')}</h2>
+      <div className="flex justify-end items-center px-2">
         <div className="relative">
            <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <select
@@ -85,6 +94,7 @@ const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> = ({ use
                 <option value="SENT">{t('history.sent')}</option>
                 <option value="RECEIVED">{t('history.received')}</option>
                 <option value={TransactionType.SEND_MONEY}>{t('transaction.type_SEND_MONEY')}</option>
+                <option value={TransactionType.REQUEST_MONEY}>{t('transaction.type_REQUEST_MONEY')}</option>
                 <option value={TransactionType.MOBILE_RECHARGE}>{t('transaction.type_MOBILE_RECHARGE')}</option>
                 <option value={TransactionType.CASH_IN}>{t('transaction.type_CASH_IN')}</option>
                 <option value={TransactionType.CASH_OUT}>{t('transaction.type_CASH_OUT')}</option>
@@ -97,12 +107,12 @@ const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> = ({ use
       ) : filteredTransactions.length > 0 ? (
         <div className="space-y-2">
           {filteredTransactions.map(tx => {
-            const isSender = tx.fromUserId === user.id;
-            const displayName = tx.type === TransactionType.MOBILE_RECHARGE ? tx.toUserMobile : (isSender ? tx.toUserName : tx.fromUserName);
+            const isOutgoing = isMoneyOutgoing(tx, user.id);
+            const displayName = tx.type === TransactionType.MOBILE_RECHARGE ? tx.toUserMobile : (isOutgoing ? tx.toUserName : tx.fromUserName);
             return (
               <Card key={tx.id} className="p-3" onClick={() => setSelectedTransaction(tx)}>
                  <div className="flex items-center">
-                    <TransactionIcon type={tx.type} isSender={isSender} />
+                    <TransactionIcon type={tx.type} isOutgoing={isOutgoing} />
                     <div className="ml-3 flex-1">
                       <p className="font-semibold text-sm">{displayName}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
@@ -111,8 +121,8 @@ const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> = ({ use
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-semibold text-sm ${isSender ? 'text-red-500' : 'text-green-500'}`}>
-                        {isSender ? '-' : '+'} {formatCurrency(tx.amount)}
+                      <p className={`font-semibold text-sm ${isOutgoing ? 'text-red-500' : 'text-green-500'}`}>
+                        {isOutgoing ? '-' : '+'} {formatCurrency(tx.amount)}
                       </p>
                       <p className="text-xs text-gray-400">{new Date(tx.timestamp).toLocaleDateString()}</p>
                     </div>

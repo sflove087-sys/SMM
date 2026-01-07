@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Transaction, TransactionType, TransactionStatus } from '../../types';
 import { api } from '../../services/mockApi';
 import Card from '../common/Card';
-import { ArrowUpRight, ArrowDownLeft, Smartphone, FileText, MoreHorizontal, Eye, EyeOff, QrCode, Send, Landmark, SmartphoneCharging } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Smartphone, FileText, MoreHorizontal, Eye, EyeOff, QrCode, Send, Landmark, SmartphoneCharging, Download, Wallet, PiggyBank, HandCoins, Building, ShoppingBag } from 'lucide-react';
 import TransactionFlow from '../TransactionFlow';
 import MyQrCodeModal from '../MyQrCodeModal';
 import TransactionDetailModal from '../TransactionDetailModal';
@@ -13,52 +13,30 @@ interface PersonalDashboardProps {
   onUserUpdate: () => Promise<void>;
 }
 
-const TransactionIcon: React.FC<{ type: TransactionType, isSender: boolean }> = ({ type, isSender }) => {
-    const commonClasses = "w-10 h-10 rounded-full flex items-center justify-center";
-    const iconColor = isSender ? 'text-red-500' : 'text-green-500';
-    const bgColor = isSender ? 'bg-red-100 dark:bg-red-900/50' : 'bg-green-100 dark:bg-green-900/50';
-
-    switch (type) {
-        case TransactionType.SEND_MONEY:
-            return <div className={`${commonClasses} ${bgColor}`}><ArrowUpRight size={20} className={iconColor} /></div>;
-        case TransactionType.CASH_OUT:
-             return <div className={`${commonClasses} ${bgColor}`}><ArrowDownLeft size={20} className={iconColor} /></div>;
-        case TransactionType.CASH_IN:
-            return <div className={`${commonClasses} ${bgColor}`}><ArrowDownLeft size={20} className={iconColor} /></div>;
-        case TransactionType.MOBILE_RECHARGE:
-            return <div className={`${commonClasses} ${bgColor}`}><SmartphoneCharging size={20} className={iconColor} /></div>;
-        default:
-            return <div className={`${commonClasses} bg-gray-100 text-gray-500`}><MoreHorizontal size={20}/></div>;
-    }
-}
-
-const StatusIndicator: React.FC<{ status: TransactionStatus }> = ({ status }) => {
-    const statusClasses = {
-        [TransactionStatus.SUCCESSFUL]: 'bg-green-500',
-        [TransactionStatus.PENDING]: 'bg-yellow-500',
-        [TransactionStatus.FAILED]: 'bg-red-500',
-    };
-    return <div className={`w-2 h-2 rounded-full ${statusClasses[status]}`} title={status}></div>
-}
-
-const ActionButton: React.FC<{icon: React.ReactNode; label: string; onClick?: () => void;}> = ({ icon, label, onClick }) => (
-    <button onClick={onClick} className="flex flex-col items-center justify-center text-center space-y-2 group w-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 p-4 aspect-square">
-        <div className="text-primary-600 dark:text-primary-300 mb-1">
-            {React.cloneElement(icon as React.ReactElement, { size: 32 })}
-        </div>
-        <p className="font-semibold text-xs text-gray-800 dark:text-gray-200">{label}</p>
-    </button>
-);
+const ActionButton: React.FC<{
+    icon: React.ReactNode; 
+    label: string; 
+    color: string;
+    onClick?: () => void;
+}> = ({ icon, label, color, onClick }) => {
+    const bgColor = color + '1A'; // Hex code for ~10% opacity
+    return (
+        <button onClick={onClick} className="flex flex-col items-center justify-center text-center space-y-1 group w-full aspect-square">
+            <div 
+                className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 group-hover:shadow-lg" 
+                style={{ backgroundColor: bgColor }}
+            >
+                {React.cloneElement(icon as React.ReactElement, { style: { color }, size: 24 })}
+            </div>
+            <p className="font-semibold text-xs text-gray-700 dark:text-gray-300 h-8 flex items-center justify-center leading-tight">{label}</p>
+        </button>
+    );
+};
 
 
 const PersonalDashboard: React.FC<PersonalDashboardProps> = ({ user, onUserUpdate }) => {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isBalanceLoading, setIsBalanceLoading] = useState(false);
     const [flowState, setFlowState] = useState<{ type: TransactionType, isOpen: boolean } | null>(null);
-    const [showBalance, setShowBalance] = useState(false);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-    const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const { t } = useLanguage();
 
     const startFlow = (type: TransactionType) => {
@@ -70,100 +48,50 @@ const PersonalDashboard: React.FC<PersonalDashboardProps> = ({ user, onUserUpdat
         await onUserUpdate();
     };
 
-    const toggleBalance = async () => {
-        if (!showBalance) {
-            setIsBalanceLoading(true);
-            await onUserUpdate();
-            setIsBalanceLoading(false);
-        }
-        setShowBalance(!showBalance);
-    };
-
-    useEffect(() => {
-        const fetchHistory = async () => {
-            setIsLoading(true);
-            try {
-                const history = await api.getTransactionHistory(user.id);
-                setTransactions(history.slice(0, 5));
-            } catch (error) {
-                console.error("Failed to fetch transaction history", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchHistory();
-    }, [user.id]);
-
-    const formatCurrency = (amount: number) => `৳${amount.toFixed(2)}`;
+    const QuickFeatureButton: React.FC<{label: string, icon: React.ReactNode}> = ({label, icon}) => (
+        <button className="bg-white dark:bg-gray-800 p-2 rounded-lg flex items-center space-x-3 w-full shadow-sm">
+            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded">
+                {icon}
+            </div>
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{label}</span>
+        </button>
+    );
 
     return (
-        <div className="p-4 space-y-6">
-            <Card className="text-center bg-gradient-to-br from-primary-600 to-primary-800 text-white" onClick={toggleBalance}>
-                <p className="text-sm text-primary-200 mb-1">{t('dashboard.balance')}</p>
-                {isBalanceLoading ? (
-                    <div className="flex justify-center items-center h-[36px]">
-                        <div className="w-6 h-6 border-2 border-t-white border-white/50 rounded-full animate-spin"></div>
-                    </div>
-                ) : showBalance ? (
-                    <p className="text-3xl font-bold flex items-center justify-center">
-                        {formatCurrency(user.balance)}
-                        <EyeOff size={20} className="ml-3 text-primary-200"/>
-                    </p>
-                ) : (
-                    <div className="text-2xl font-semibold flex items-center justify-center cursor-pointer h-[36px]">
-                        {t('dashboard.tapForBalance')}
-                        <Eye size={20} className="ml-3 text-primary-200"/>
-                    </div>
-                )}
-            </Card>
+        <div className="bg-white dark:bg-gray-900 -mt-16 relative z-10 rounded-t-2xl">
+            <div className="p-4 space-y-6">
+                <div className="grid grid-cols-4 gap-x-2 gap-y-2">
+                    <ActionButton icon={<Send />} label={t('dashboard.sendMoney')} color="#F43F5E" onClick={() => startFlow(TransactionType.SEND_MONEY)} />
+                    <ActionButton icon={<SmartphoneCharging />} label={t('dashboard.mobileRecharge')} color="#22C55E" onClick={() => startFlow(TransactionType.MOBILE_RECHARGE)} />
+                    <ActionButton icon={<Landmark />} label={t('dashboard.cashOut')} color="#14B8A6" onClick={() => startFlow(TransactionType.CASH_OUT)} />
+                    <ActionButton icon={<ShoppingBag />} label={t('dashboard.payment')} color="#F97316" />
+                    <ActionButton icon={<Wallet />} label={t('dashboard.addMoney')} color="#8B5CF6" onClick={() => startFlow(TransactionType.REQUEST_MONEY)} />
+                    <ActionButton icon={<Building />} label={t('dashboard.payBill')} color="#0EA5E9" />
+                    <ActionButton icon={<PiggyBank />} label={t('dashboard.savings')} color="#EC4899" />
+                    <ActionButton icon={<HandCoins />} label={t('dashboard.loan')} color="#A16207" />
+                </div>
 
-            <div className="grid grid-cols-3 gap-4">
-                <ActionButton icon={<Send />} label={t('dashboard.sendMoney')} onClick={() => startFlow(TransactionType.SEND_MONEY)} />
-                <ActionButton icon={<Landmark />} label={t('dashboard.cashOut')} onClick={() => startFlow(TransactionType.CASH_OUT)} />
-                <ActionButton icon={<SmartphoneCharging />} label={t('dashboard.mobileRecharge')} onClick={() => startFlow(TransactionType.MOBILE_RECHARGE)} />
-                <ActionButton icon={<ArrowDownLeft />} label={t('dashboard.cashIn')} onClick={() => startFlow(TransactionType.CASH_IN)} />
-                <ActionButton 
-                    icon={<QrCode />} 
-                    label={t('dashboard.myQr')} 
-                    onClick={() => setIsQrModalOpen(true)} 
-                />
-            </div>
+                 <button className="w-full text-center text-sm font-bold text-primary-600 bg-primary-100/50 dark:bg-primary-900/20 py-2 rounded-lg">
+                    {t('dashboard.seeMore')}
+                 </button>
 
-            <div>
-                <h2 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">{t('dashboard.recentTransactions')}</h2>
-                {isLoading ? (
-                    <div className="text-center p-4">{t('dashboard.loading')}</div>
-                ) : transactions.length > 0 ? (
-                    <div className="space-y-2">
-                        {transactions.map(tx => {
-                            const isSender = tx.fromUserId === user.id;
-                            const displayName = tx.type === TransactionType.MOBILE_RECHARGE ? tx.toUserMobile : (isSender ? tx.toUserName : tx.fromUserName);
-                            const displayLabel = tx.type === TransactionType.MOBILE_RECHARGE ? t('transaction.type_MOBILE_RECHARGE') : (isSender ? t('dashboard.to', { name: tx.toUserName }) : t('dashboard.from', { name: tx.fromUserName }));
-                            const borderColor = isSender ? 'border-red-500' : 'border-green-500';
+                 <div className="bg-primary-500 rounded-lg p-4 text-white font-bengali">
+                    <p className="font-bold text-lg">বিকাশ অ্যাপে ডিজিটাল লোন</p>
+                    <p className="text-3xl font-bold my-1">গড়ছে জীবন মিটছে প্রয়োজন</p>
+                    <button className="bg-white text-primary-600 font-bold px-4 py-1 rounded mt-2 text-sm">
+                        ট্যাপ করুন
+                    </button>
+                 </div>
 
-                            return (
-                                <Card key={tx.id} className={`p-3 border-l-4 ${borderColor}`} onClick={() => setSelectedTransaction(tx)}>
-                                    <div className="flex items-center">
-                                        <TransactionIcon type={tx.type} isSender={isSender} />
-                                        <div className="ml-3 flex-1">
-                                            <p className="font-semibold text-sm">{displayName}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{displayLabel}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className={`font-semibold text-sm flex items-center justify-end gap-2 ${isSender ? 'text-red-500' : 'text-green-500'}`}>
-                                                <StatusIndicator status={tx.status} />
-                                                <span>{isSender ? '-' : '+'} {formatCurrency(tx.amount)}</span>
-                                            </div>
-                                            <p className="text-xs text-gray-400 font-normal">{new Date(tx.timestamp).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-                                </Card>
-                            )
-                        })}
+                 <div>
+                    <h3 className="font-bold mb-2 text-gray-800 dark:text-gray-200">{t('dashboard.quickFeatures')}</h3>
+                    <div className="grid grid-cols-3 gap-2">
+                        <QuickFeatureButton label="Bondhu..." icon={<ShoppingBag size={20} className="text-orange-500" />} />
+                        <QuickFeatureButton label="013181..." icon={<SmartphoneCharging size={20} className="text-green-500" />} />
+                        <QuickFeatureButton label="শিরিন ..." icon={<Send size={20} className="text-pink-500" />} />
                     </div>
-                ) : (
-                    <Card><p className="text-center text-gray-500 py-4">{t('dashboard.noRecentTransactions')}</p></Card>
-                )}
+                 </div>
+
             </div>
 
             {flowState?.isOpen && (
@@ -178,13 +106,6 @@ const PersonalDashboard: React.FC<PersonalDashboardProps> = ({ user, onUserUpdat
                 <MyQrCodeModal
                     user={user}
                     onClose={() => setIsQrModalOpen(false)}
-                />
-            )}
-             {selectedTransaction && (
-                <TransactionDetailModal
-                    transaction={selectedTransaction}
-                    currentUserId={user.id}
-                    onClose={() => setSelectedTransaction(null)}
                 />
             )}
         </div>
