@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { User, Transaction, TransactionType, DailySummary } from '../../types';
+import React, { useState } from 'react';
+import { User, TransactionType } from '../../types';
 import Card from '../common/Card';
-import { ArrowDownLeft, ShieldCheck, DollarSign, Sunrise, Sunset, QrCode, BellDot } from 'lucide-react';
+import { ArrowDownLeft, ShieldCheck, DollarSign, Sunrise, Sunset, QrCode } from 'lucide-react';
 import TransactionFlow from '../TransactionFlow';
 import MyQrCodeModal from '../MyQrCodeModal';
 import { useLanguage } from '../../contexts/LanguageContext';
 import VerifyCustomerFlow from '../VerifyCustomerFlow';
-import { api } from '../../services/mockApi';
-import RequestApprovalFlow from '../RequestApprovalFlow';
-import Button from '../common/Button';
 
 
 interface AgentDashboardProps {
@@ -31,41 +28,7 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ user, onUserUpdate }) =
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
     const [isBalanceLoading, setIsBalanceLoading] = useState(false);
-    const [pendingRequests, setPendingRequests] = useState<Transaction[]>([]);
-    const [isLoadingRequests, setIsLoadingRequests] = useState(true);
-    const [selectedRequest, setSelectedRequest] = useState<Transaction | null>(null);
-    const [summary, setSummary] = useState<DailySummary | null>(null);
-    const [isLoadingSummary, setIsLoadingSummary] = useState(true);
     const { t } = useLanguage();
-
-    const fetchData = async () => {
-        setIsLoadingRequests(true);
-        setIsLoadingSummary(true);
-        try {
-            const requestsPromise = api.getPendingRequests();
-            const summaryPromise = api.getTodaysSummary();
-            
-            const [requests, summaryData] = await Promise.all([requestsPromise, summaryPromise]);
-            
-            setPendingRequests(requests);
-            setSummary(summaryData);
-        } catch (error) {
-            console.error("Failed to fetch agent dashboard data", error);
-        } finally {
-            setIsLoadingRequests(false);
-            setIsLoadingSummary(false);
-        }
-    };
-    
-    useEffect(() => {
-        fetchData();
-    }, [user.id]);
-
-    const handleRequestUpdate = async () => {
-        setSelectedRequest(null);
-        await fetchData();
-        await onUserUpdate(); // Refresh balance
-    };
 
     const startFlow = (type: TransactionType) => {
         setFlowState({ type, isOpen: true });
@@ -114,53 +77,23 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ user, onUserUpdate }) =
                  <ActionButton icon={<ShieldCheck size={32} />} label={t('agentDashboard.verifyCustomer')} onClick={() => setIsVerifyModalOpen(true)} />
             </div>
 
-            {isLoadingRequests ? (
-                 <div className="text-center p-4">{t('dashboard.loading')}</div>
-            ) : pendingRequests.length > 0 && (
-                <Card>
-                    <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200 flex items-center">
-                        <BellDot size={18} className="mr-2 text-primary-500" />
-                        {t('agentDashboard.pendingRequests')}
-                    </h3>
-                    <div className="space-y-2">
-                        {pendingRequests.map(req => (
-                            <div key={req.id} className="p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-sm">{req.fromUserName}</p>
-                                    <p className="text-xs text-gray-500">{formatCurrency(req.amount)}</p>
-                                </div>
-                                <div className="flex space-x-2">
-                                    <Button onClick={() => setSelectedRequest(req)} className="!py-1 !px-3 !text-xs">{t('agentDashboard.approve')}</Button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-
             <Card>
                 <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">{t('agentDashboard.todaysSummary')}</h3>
-                 {isLoadingSummary || !summary ? (
-                     <div className="text-center p-4">{t('dashboard.loading')}</div>
-                ) : (
-                    <div className="flex justify-around text-center">
-                        <div className="space-y-1">
-                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                               <Sunrise size={14} className="mr-1 text-green-500"/> {t('agentDashboard.totalCashIn')}
-                            </p>
-                            <p className="text-lg font-bold text-green-500">{formatCurrency(summary.totalCashInAmount)}</p>
-                            <p className="text-xs text-gray-400">{t('agentDashboard.transactionCount', {count: summary.totalCashInCount})}</p>
-                        </div>
-                         <div className="border-l dark:border-gray-700"></div>
-                        <div className="space-y-1">
-                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                               <Sunset size={14} className="mr-1 text-red-500"/> {t('agentDashboard.totalCashOut')}
-                            </p>
-                            <p className="text-lg font-bold text-red-500">{formatCurrency(summary.totalCashOutAmount)}</p>
-                             <p className="text-xs text-gray-400">{t('agentDashboard.transactionCount', {count: summary.totalCashOutCount})}</p>
-                        </div>
+                <div className="flex justify-around text-center">
+                    <div className="space-y-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                           <Sunrise size={14} className="mr-1 text-green-500"/> {t('agentDashboard.totalCashIn')}
+                        </p>
+                        <p className="text-lg font-bold text-green-500">{formatCurrency(25000)}</p>
                     </div>
-                )}
+                     <div className="border-l dark:border-gray-700"></div>
+                    <div className="space-y-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                           <Sunset size={14} className="mr-1 text-red-500"/> {t('agentDashboard.totalCashOut')}
+                        </p>
+                        <p className="text-lg font-bold text-red-500">{formatCurrency(18500)}</p>
+                    </div>
+                </div>
             </Card>
 
              <p className="text-xs text-center text-gray-500 dark:text-gray-400 px-4">
@@ -185,14 +118,6 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ user, onUserUpdate }) =
             {isVerifyModalOpen && (
                 <VerifyCustomerFlow
                     onClose={() => setIsVerifyModalOpen(false)}
-                />
-            )}
-            
-            {selectedRequest && (
-                <RequestApprovalFlow
-                    agent={user}
-                    request={selectedRequest}
-                    onClose={handleRequestUpdate}
                 />
             )}
         </div>

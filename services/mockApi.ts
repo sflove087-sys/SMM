@@ -1,10 +1,10 @@
-import { User, Transaction, TransactionType, UserType, AdminSystemSettings, LoggingStatus, DailySummary } from '../types';
+import { User, Transaction, TransactionType, UserType, AdminSystemSettings, LoggingStatus } from '../types';
 
 // =========================================================================
 // Central Backend Endpoint: All app requests are sent to this single URL.
 // This URL points to a deployed Google Apps Script Web App that acts as the backend.
 // =========================================================================
-export const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIH1-d8Zd9GgTdkzzyj7cWne6VLdFpjhtoeLwSs9nrp_ipF05OhKvM--cG6fzJeVZEfQ/exec";
+export const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6PF8l4xrmPTDlW1gPbsEN3MrYPbzLas4EeW2nplZe-RFDA2izzw952ZEdZj2a7AykoQ/exec";
 
 // --- Utility Functions ---
 const getSessionUser = (): User | null => {
@@ -75,8 +75,8 @@ export const api = {
         return callApi('getTransactionHistory');
     },
 
-    performTransaction: async (type: TransactionType, fromUserId: string, toMobile: string, amount: number, pin: string, reference?: string): Promise<Transaction> => {
-        return callApi('performTransaction', { type, toMobile, amount, pin, reference });
+    performTransaction: async (type: TransactionType, fromUserId: string, toMobile: string, amount: number, pin: string): Promise<Transaction> => {
+        return callApi('performTransaction', { type, toMobile, amount, pin });
     },
 
     registerUser: async (name: string, mobile: string, pin: string, email?: string): Promise<User> => {
@@ -97,19 +97,6 @@ export const api = {
     
     getContacts: async (recipientType: UserType): Promise<User[]> => {
         return callApi('getContacts', { recipientType });
-    },
-
-    // Agent functions
-    getPendingRequests: async (): Promise<Transaction[]> => {
-        return callApi('getPendingRequests');
-    },
-
-    updateRequestStatus: async (transactionId: string, status: 'SUCCESSFUL' | 'FAILED', pin?: string): Promise<Transaction> => {
-        return callApi('updateRequestStatus', { transactionId, status, pin });
-    },
-
-    getTodaysSummary: async (): Promise<DailySummary> => {
-        return callApi('getTodaysSummary');
     },
 
     // Admin functions

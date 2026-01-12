@@ -8,7 +8,6 @@ export enum TransactionType {
     CASH_IN = 'CASH_IN',
     CASH_OUT = 'CASH_OUT',
     SEND_MONEY = 'SEND_MONEY',
-    REQUEST_MONEY = 'REQUEST_MONEY',
     MOBILE_RECHARGE = 'MOBILE_RECHARGE',
     MANUAL_ADJUSTMENT = 'MANUAL_ADJUSTMENT',
 }
@@ -57,11 +56,4 @@ export interface AdminSystemSettings {
     personalMonthlyLimit: number;
     agentCashHandlingLimit: number;
     otpRules: string;
-}
-
-export interface DailySummary {
-    totalCashInAmount: number;
-    totalCashInCount: number;
-    totalCashOutAmount: number;
-    totalCashOutCount: number;
 }

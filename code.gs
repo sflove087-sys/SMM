@@ -53,14 +53,6 @@ function doPost(e) {
         return createSuccessResponse(handleUpdateProfile(payload));
       case 'getContacts':
         return createSuccessResponse(handleGetContacts(payload));
-      
-      // AGENT
-      case 'getPendingRequests':
-        return createSuccessResponse(handleGetPendingRequests(payload));
-      case 'updateRequestStatus':
-        return createSuccessResponse(handleUpdateRequestStatus(payload));
-      case 'getTodaysSummary':
-        return createSuccessResponse(handleGetTodaysSummary(payload));
 
       // ADMIN
       case 'getAllUsers':
@@ -157,9 +149,9 @@ function handleRegisterUser(payload) {
     return newUser;
 }
 
-/** Performs a transaction between two users or creates a pending request. */
+/** Performs a transaction between two users. */
 function handlePerformTransaction(payload) {
-  const { type, toMobile, amount, pin, userId, reference } = payload;
+  const { type, toMobile, amount, pin, userId } = payload;
   const usersSheet = getSheet(USERS_SHEET_NAME);
   const settings = handleGetSystemSettings();
 
@@ -169,50 +161,41 @@ function handlePerformTransaction(payload) {
   
   if (fromUser.pin.toString() !== pin.toString()) throw new Error("Incorrect PIN.");
 
-  const toUserRow = findRow(usersSheet, USER_COLS.MOBILE, toMobile);
-  if (!toUserRow && type !== 'MOBILE_RECHARGE') throw new Error("Recipient not found.");
-  const toUser = toUserRow ? sheetToUser(toUserRow.data) : null;
-
-  if (toUser && fromUser.id === toUser.id) throw new Error("Cannot transact with yourself.");
-
-  // For Money Requests, just log the pending transaction and return.
-  if (type === 'REQUEST_MONEY') {
-    if (fromUser.userType !== 'PERSONAL' || (toUser && toUser.userType !== 'AGENT')) {
-      throw new Error("Money can only be requested from an Agent by a Personal user.");
-    }
-    const requestTransaction = {
-      id: `t${Date.now()}`, type, amount, status: 'PENDING', timestamp: new Date(),
-      fromUserId: fromUser.id, toUserId: toUser.id,
-      fromUserName: fromUser.name, toUserName: toUser.name,
-      fromUserMobile: fromUser.mobile, toUserMobile: toUser.mobile,
-      description: reference || `Request from ${fromUser.name}`
-    };
-    getSheet(TRANSACTIONS_SHEET_NAME).appendRow(transactionToSheet(requestTransaction));
-    return requestTransaction;
+  let toUserRow, toUser;
+  if (type !== 'MOBILE_RECHARGE') {
+    toUserRow = findRow(usersSheet, USER_COLS.MOBILE, toMobile);
+    if (!toUserRow) throw new Error("Recipient not found.");
+    toUser = sheetToUser(toUserRow.data);
+    if (fromUser.id === toUser.id) throw new Error("Cannot transact with yourself.");
   }
-  
-  // --- Standard Transaction Logic ---
+
   let debitorRow = fromUserRow;
   let debitor = fromUser;
   let creditorRow = toUserRow;
   let creditor = toUser;
 
-  // SPECIAL CASE: Agent Cashing IN to a Personal user.
-  if (type === 'CASH_IN' && fromUser.userType === 'AGENT') {
-      // Standard flow is correct: Agent is debitor, Personal is creditor.
+  // SPECIAL CASE: Personal user initiated CASH_IN.
+  // The money comes FROM the agent TO the user. So the agent is the debitor.
+  if (type === 'CASH_IN' && fromUser.userType === 'PERSONAL') {
+      debitorRow = toUserRow; // Agent
+      debitor = toUser;
+      creditorRow = fromUserRow; // Personal User
+      creditor = fromUser;
   }
   
   // 1. Check debitor's balance
   if (debitor.balance < amount) throw new Error("Insufficient balance for the transaction.");
 
-  // 2. Apply transaction limits to the initiator (original fromUser)
-  if(fromUser.userType === 'PERSONAL' && (fromUser.dailyTransactionTotal + amount > settings.personalDailyLimit)) throw new Error('Daily transaction limit exceeded.');
-  if(fromUser.userType === 'PERSONAL' && (fromUser.monthlyTransactionTotal + amount > settings.personalMonthlyLimit)) throw new Error('Monthly transaction limit exceeded.');
-  
-  // Update initiator's totals
-  usersSheet.getRange(fromUserRow.row, USER_COLS.DAILY_TOTAL).setValue(fromUser.dailyTransactionTotal + amount);
-  usersSheet.getRange(fromUserRow.row, USER_COLS.MONTHLY_TOTAL).setValue(fromUser.monthlyTransactionTotal + amount);
-
+  // 2. Apply transaction limits to the initiator (original fromUser) if applicable
+  // Limits do not apply when receiving money (CASH_IN for PERSONAL user)
+  if (!(type === 'CASH_IN' && fromUser.userType === 'PERSONAL')) {
+      if(fromUser.userType === 'PERSONAL' && (fromUser.dailyTransactionTotal + amount > settings.personalDailyLimit)) throw new Error('Daily transaction limit exceeded.');
+      if(fromUser.userType === 'PERSONAL' && (fromUser.monthlyTransactionTotal + amount > settings.personalMonthlyLimit)) throw new Error('Monthly transaction limit exceeded.');
+      
+      // Update initiator's totals
+      usersSheet.getRange(fromUserRow.row, USER_COLS.DAILY_TOTAL).setValue(fromUser.dailyTransactionTotal + amount);
+      usersSheet.getRange(fromUserRow.row, USER_COLS.MONTHLY_TOTAL).setValue(fromUser.monthlyTransactionTotal + amount);
+  }
 
   // 3. Perform the balance update
   usersSheet.getRange(debitorRow.row, USER_COLS.BALANCE).setValue(debitor.balance - amount);
@@ -220,15 +203,23 @@ function handlePerformTransaction(payload) {
       usersSheet.getRange(creditorRow.row, USER_COLS.BALANCE).setValue(creditor.balance + amount);
   }
   
-  // 4. Log the transaction
+  // 4. Log the transaction (always using original from/to to reflect initiation)
+  const transactionsSheet = getSheet(TRANSACTIONS_SHEET_NAME);
   const newTransaction = {
-      id: `t${Date.now()}`, type, amount, status: 'SUCCESSFUL', timestamp: new Date(),
-      fromUserId: fromUser.id, toUserId: toUser ? toUser.id : 'system_recharge',
-      fromUserName: fromUser.name, toUserName: toUser ? toUser.name : `Recharge`,
-      fromUserMobile: fromUser.mobile, toUserMobile: toMobile,
-      description: reference || `${type.replace('_', ' ')}`
+      id: `t${Date.now()}`,
+      type: type,
+      amount: amount,
+      status: 'SUCCESSFUL',
+      timestamp: new Date(),
+      fromUserId: fromUser.id,
+      toUserId: toUser ? toUser.id : 'system_recharge',
+      fromUserName: fromUser.name,
+      toUserName: toUser ? toUser.name : `Recharge to ${toMobile}`,
+      fromUserMobile: fromUser.mobile,
+      toUserMobile: toMobile,
+      description: `${type.replace('_', ' ')}`
   };
-  getSheet(TRANSACTIONS_SHEET_NAME).appendRow(transactionToSheet(newTransaction));
+  transactionsSheet.appendRow(transactionToSheet(newTransaction));
   
   return newTransaction;
 }
@@ -351,93 +342,6 @@ function handleGetContacts(payload) {
     .filter(function(u) {
       return u.userType === recipientType && u.id !== userId && u.isActive;
     });
-}
-
-/** Gets pending money requests for an agent. */
-function handleGetPendingRequests(payload) {
-  const { userId } = payload; // Agent's ID
-  const sheet = getSheet(TRANSACTIONS_SHEET_NAME);
-  const data = sheet.getDataRange().getValues();
-  data.shift();
-
-  return data.map(sheetToTransaction)
-    .filter(tx => tx.toUserId === userId && tx.type === 'REQUEST_MONEY' && tx.status === 'PENDING')
-    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-}
-
-/** Updates the status of a money request (Approve/Decline). */
-function handleUpdateRequestStatus(payload) {
-  const { transactionId, status, pin, userId } = payload; // userId is the agent
-  const txSheet = getSheet(TRANSACTIONS_SHEET_NAME);
-  const usersSheet = getSheet(USERS_SHEET_NAME);
-
-  const txRow = findRow(txSheet, TRANSACTION_COLS.ID, transactionId);
-  if (!txRow) throw new Error("Transaction not found.");
-  const tx = sheetToTransaction(txRow.data);
-
-  if (tx.toUserId !== userId || tx.status !== 'PENDING') {
-    throw new Error("Invalid request or permission denied.");
-  }
-  
-  if (status === 'SUCCESSFUL') {
-    const agentRow = findRow(usersSheet, USER_COLS.ID, userId);
-    if (!agentRow) throw new Error("Agent account not found.");
-    const agent = sheetToUser(agentRow.data);
-
-    if (agent.pin.toString() !== pin.toString()) throw new Error("Incorrect PIN.");
-    if (agent.balance < tx.amount) throw new Error("Insufficient agent balance to approve request.");
-
-    const customerRow = findRow(usersSheet, USER_COLS.ID, tx.fromUserId);
-    if (!customerRow) throw new Error("Customer account not found.");
-    const customer = sheetToUser(customerRow.data);
-    
-    // Perform balance update
-    usersSheet.getRange(agentRow.row, USER_COLS.BALANCE).setValue(agent.balance - tx.amount);
-    usersSheet.getRange(customerRow.row, USER_COLS.BALANCE).setValue(customer.balance + tx.amount);
-  }
-
-  // Update transaction status for both SUCCESSFUL and FAILED
-  txSheet.getRange(txRow.row, TRANSACTION_COLS.STATUS).setValue(status);
-  
-  const updatedTx = sheetToTransaction(txSheet.getRange(txRow.row, 1, 1, txSheet.getLastColumn()).getValues()[0]);
-  return updatedTx;
-}
-
-/** Gets the daily summary for an agent. */
-function handleGetTodaysSummary(payload) {
-  const { userId } = payload; // Agent's ID
-  const sheet = getSheet(TRANSACTIONS_SHEET_NAME);
-  const data = sheet.getDataRange().getValues();
-  data.shift();
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  let totalCashInAmount = 0;
-  let totalCashInCount = 0;
-  let totalCashOutAmount = 0;
-  let totalCashOutCount = 0;
-
-  data.map(sheetToTransaction)
-    .filter(function(tx) {
-      const txDate = new Date(tx.timestamp);
-      txDate.setHours(0, 0, 0, 0);
-      return txDate.getTime() === today.getTime() && tx.status === 'SUCCESSFUL';
-    })
-    .forEach(function(tx) {
-      // 'CASH_IN': Agent's balance decreases. Agent is 'from'. Agent takes cash from customer.
-      if (tx.type === 'CASH_IN' && tx.fromUserId === userId) {
-        totalCashInAmount += tx.amount;
-        totalCashInCount++;
-      }
-      // 'CASH_OUT': Agent's balance increases. Agent is 'to'. Agent gives cash to customer.
-      if (tx.type === 'CASH_OUT' && tx.toUserId === userId) {
-        totalCashOutAmount += tx.amount;
-        totalCashOutCount++;
-      }
-    });
-
-  return { totalCashInAmount: totalCashInAmount, totalCashInCount: totalCashInCount, totalCashOutAmount: totalCashOutAmount, totalCashOutCount: totalCashOutCount };
 }
 
 

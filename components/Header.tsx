@@ -1,69 +1,78 @@
+
 import React, { useState } from 'react';
 import { User } from '../types';
-import { Search, Bell, Menu } from 'lucide-react';
+import { LogOut, User as UserIcon, Shield, Settings, Check } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
     user: User;
     onLogout: () => void;
-    onUserUpdate: () => Promise<void>;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, onLogout, onUserUpdate }) => {
-    const [showBalance, setShowBalance] = useState(false);
-    const [isBalanceLoading, setIsBalanceLoading] = useState(false);
-    const { t } = useLanguage();
+const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
+    const [showDropdown, setShowDropdown] = useState(false);
+    const { language, setLanguage, t } = useLanguage();
 
-    const toggleBalance = async () => {
-        if (!showBalance) {
-            setIsBalanceLoading(true);
-            await onUserUpdate();
-            setIsBalanceLoading(false);
+    const getUserInitials = (name: string) => {
+        const names = name.split(' ');
+        if (names.length > 1 && names[0] && names[names.length - 1]) {
+            return `${names[0][0]}${names[names.length - 1][0]}`;
         }
-        setShowBalance(!showBalance);
+        return name.substring(0, 2);
     };
     
-    const formatCurrency = (amount: number) => `৳${amount.toFixed(2)}`;
-
     return (
-        <header className="relative bg-primary-600 text-white pb-16">
-            <div className="p-4 relative z-10">
-                <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center space-x-3">
-                         <div className="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center font-bold text-lg overflow-hidden border-2 border-white/50">
-                            {user.photoBase64 ? (
-                                <img src={user.photoBase64} alt="Profile" className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-2xl">{user.name.charAt(0)}</span>
-                            )}
-                        </div>
-                        <div>
-                            <h1 className="font-semibold text-white text-lg leading-tight">{user.name}</h1>
-                        </div>
+        <header className="bg-white dark:bg-black p-4 sticky top-0 z-10 border-b dark:border-gray-800">
+            <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                     <div className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold text-lg overflow-hidden">
+                        {user.photoBase64 ? (
+                            <img src={user.photoBase64} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            getUserInitials(user.name)
+                        )}
                     </div>
-                     <div className="flex items-center space-x-2">
-                        <button className="p-2.5 rounded-full bg-white/20 hover:bg-white/30"><Search size={20} /></button>
-                        <button className="p-2.5 rounded-full bg-white/20 hover:bg-white/30"><Bell size={20}/></button>
+                    <div>
+                        <h1 className="font-semibold text-gray-800 dark:text-gray-100 text-lg leading-tight">{t('header.greeting', { name: user.name.split(' ')[0] })}</h1>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 leading-tight">{t('header.welcome')}</p>
                     </div>
                 </div>
-                <button 
-                    onClick={toggleBalance} 
-                    className="bg-white text-primary-800 rounded-lg px-4 py-2 text-md font-bold flex items-center shadow-lg"
-                >
-                    <span className="font-bengali text-2xl mr-2 text-primary-500">৳</span>
-                    {isBalanceLoading ? (
-                        <div className="w-5 h-5 border-2 border-t-primary-500 border-primary-200 rounded-full animate-spin"></div>
-                    ) : showBalance ? (
-                         <span>{formatCurrency(user.balance)}</span>
-                    ): (
-                        t('header.checkBalance')
+                 <div className="relative">
+                    <button onClick={() => setShowDropdown(!showDropdown)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <Settings size={22} className="text-gray-600 dark:text-gray-300" />
+                    </button>
+                    {showDropdown && (
+                        <div 
+                            className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-20 border dark:border-gray-700"
+                            onMouseLeave={() => setShowDropdown(false)}
+                        >
+                            <div className="px-4 py-2 border-b dark:border-gray-700">
+                                <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">{user.name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{user.mobile}</p>
+                            </div>
+                            <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <UserIcon size={16} className="mr-3" /> {t('header.myProfile')}
+                            </a>
+                            <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <Shield size={16} className="mr-3" /> {t('header.securitySettings')}
+                            </a>
+                             <div className="border-t dark:border-gray-700 my-1"></div>
+                             <div className="px-4 pt-2 pb-1 text-xs text-gray-400">Language</div>
+                             <button onClick={() => setLanguage('en')} className="w-full text-left flex justify-between items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <span>English</span>
+                                {language === 'en' && <Check size={16} className="text-primary-500" />}
+                            </button>
+                            <button onClick={() => setLanguage('bn')} className="w-full text-left flex justify-between items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <span>বাংলা</span>
+                                {language === 'bn' && <Check size={16} className="text-primary-500" />}
+                            </button>
+                             <div className="border-t dark:border-gray-700 my-1"></div>
+                            <button onClick={onLogout} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <LogOut size={16} className="mr-3" /> {t('header.logout')}
+                            </button>
+                        </div>
                     )}
-                </button>
-            </div>
-            <div className="absolute bottom-0 left-0 w-full z-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-                    <path fill="#ffffff" fillOpacity="1" className="dark:fill-gray-900" d="M0,224L48,229.3C96,235,192,245,288,218.7C384,192,480,128,576,128C672,128,768,192,864,218.7C960,245,1056,235,1152,208C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-                </svg>
+                </div>
             </div>
         </header>
     );

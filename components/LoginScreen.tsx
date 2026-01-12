@@ -6,18 +6,16 @@ import Input from './common/Input';
 import Logo from './common/Logo';
 import SignUpFlow from './SignUpFlow';
 import ForgotPinFlow from './ForgotPinFlow';
-import { Smartphone, Lock, Sun, Moon } from 'lucide-react';
+import { Smartphone, Lock } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { APP_NAME } from '../constants';
 import BiometricPrompt from './BiometricPrompt';
 
 interface LoginScreenProps {
   onLogin: (user: User) => void;
-  toggleTheme: () => void;
-  isDarkMode: boolean;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, toggleTheme, isDarkMode }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [mobile, setMobile] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
@@ -69,14 +67,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, toggleTheme, isDarkM
     <div className="flex-grow flex flex-col justify-center items-center text-center">
         <Logo className="mb-8" />
         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{t('login.welcome')}</h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">{t('login.subtitle', { appName: APP_NAME })}</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-8">{t('login.subtitle', { appName: APP_NAME })}</p>
       
-        <div className="mb-6">
-            <button onClick={toggleTheme} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-        </div>
-
         <form onSubmit={handleLogin} className="w-full max-w-xs space-y-4">
           <Input
             type="tel"

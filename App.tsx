@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from './types';
 import LoginScreen from './components/LoginScreen';
@@ -93,11 +94,16 @@ const App: React.FC = () => {
 
     return (
         <div className="antialiased text-gray-900 dark:text-gray-200">
-            <div className="max-w-sm mx-auto min-h-screen bg-gray-50 dark:bg-gray-950 shadow-2xl flex flex-col">
+             <div className="fixed top-4 right-4 z-50">
+                <button onClick={toggleTheme} className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow-md">
+                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+            </div>
+            <div className="max-w-sm mx-auto min-h-screen bg-white dark:bg-black shadow-2xl flex flex-col">
                 {currentUser ? (
-                    <MainApp user={currentUser} onLogout={handleLogout} onUserUpdate={refreshUser} toggleTheme={toggleTheme} isDarkMode={isDarkMode}/>
+                    <MainApp user={currentUser} onLogout={handleLogout} onUserUpdate={refreshUser} />
                 ) : (
-                    <LoginScreen onLogin={handleLogin} toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+                    <LoginScreen onLogin={handleLogin} />
                 )}
             </div>
         </div>

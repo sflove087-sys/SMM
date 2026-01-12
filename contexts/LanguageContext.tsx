@@ -20,21 +20,51 @@ export const useLanguage = () => useContext(LanguageContext);
 
 interface LanguageProviderProps {
     children: React.ReactNode;
-    translations: any;
 }
 
 // Create the provider component
-export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children, translations }) => {
-  const [language] = useState('bn');
-  
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [language, setLanguageState] = useState(() => localStorage.getItem('language') || 'bn');
+  const [translations, setTranslations] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    document.documentElement.lang = 'bn';
-    document.body.classList.add('font-bengali');
-    document.body.classList.remove('font-sans');
-  }, []);
+    const fetchTranslations = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/locales/${language}.json`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTranslations(data);
+      } catch (error) {
+        console.error(`Could not load translations for ${language}`, error);
+        // Fallback to Bengali if the selected language file fails to load
+        if (language !== 'bn') {
+            setLanguage('bn');
+        }
+      } finally {
+          setIsLoading(false);
+      }
+    };
+    
+    fetchTranslations();
+    
+    // Update document attributes for language and font
+    document.documentElement.lang = language;
+    if (language === 'bn') {
+        document.body.classList.add('font-bengali');
+        document.body.classList.remove('font-sans');
+    } else {
+        document.body.classList.remove('font-bengali');
+        document.body.classList.add('font-sans');
+    }
+  }, [language]);
 
   const setLanguage = (lang: string) => {
-    // Language is fixed to Bengali, so this function does nothing.
+    localStorage.setItem('language', lang);
+    setLanguageState(lang);
   };
 
   const t = useCallback((key: string, options?: { [key: string]: string | number }) => {
@@ -50,15 +80,20 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children, tr
 
     if (options && typeof text === 'string') {
         Object.keys(options).forEach(k => {
-            // Using `split` and `join` for maximum browser compatibility,
-            // as `replaceAll` might not be available in older browser environments (like older WebViews).
-            // This achieves the same result of global replacement more robustly.
-            text = text.split(`{${k}}`).join(String(options[k]));
+            text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(options[k]));
         });
     }
 
     return text;
-  }, [translations]);
+  }, [translations, language]);
+  
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+            <div className="w-16 h-16 border-4 border-t-primary-500 border-gray-200 rounded-full animate-spin"></div>
+        </div>
+    );
+  }
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

@@ -1,32 +1,86 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, TransactionType, Transaction, UserType, LoggingStatus, TransactionStatus } from '../types';
+import { User, TransactionType, Transaction, UserType, LoggingStatus } from '../types';
 import { api } from '../services/mockApi';
 import Modal from './common/Modal';
 import Button from './common/Button';
 import Input from './common/Input';
-import { Smartphone, DollarSign, Lock, CheckCircle, XCircle, ArrowRight, Share2, QrCode, X, Wifi, Cloud, CloudCheck, CloudOff, Fingerprint, Clock, Edit2 } from 'lucide-react';
+import { Smartphone, DollarSign, Lock, CheckCircle, XCircle, ArrowRight, Share2, QrCode, X, Wifi, Cloud, CloudCheck, CloudOff, Fingerprint } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import Logo from './common/Logo';
 import PinInput from './common/PinInput';
 import NumericKeypad from './common/NumericKeypad';
 import { TRANSACTION_PIN_ATTEMPT_LIMIT } from '../constants';
-import QrScanner from './common/QrScanner';
 
 // Add Html5QrcodeScanner to the window object for TypeScript
 declare global {
     interface Window {
+        Html5QrcodeScanner: any;
         htmlToImage: any;
     }
 }
 
+interface QrScannerProps {
+    onSuccess: (decodedText: string) => void;
+    onClose: () => void;
+}
+
+const QrScanner: React.FC<QrScannerProps> = ({ onSuccess, onClose }) => {
+    const { t } = useLanguage();
+    useEffect(() => {
+        if (!window.Html5QrcodeScanner) {
+            console.error("html5-qrcode library not loaded.");
+            return;
+        }
+
+        const html5QrcodeScanner = new window.Html5QrcodeScanner(
+            "qr-reader",
+            { fps: 10, qrbox: { width: 250, height: 250 }, supportedScanTypes: [0] }, // 0 for camera
+            /* verbose= */ false
+        );
+
+        const onScanSuccess = (decodedText: string, decodedResult: any) => {
+            onSuccess(decodedText);
+            html5QrcodeScanner.clear().catch(error => {
+                console.error("Failed to clear scanner on success.", error);
+            });
+        };
+
+        const onScanFailure = (error: any) => {
+            // This callback is called frequently, so we typically ignore it.
+        };
+
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        // Cleanup function to stop the scanner when the component unmounts
+        return () => {
+            // Need to check if getState is a function and if scanner is running
+            if (html5QrcodeScanner && typeof html5QrcodeScanner.getState === 'function' && html5QrcodeScanner.getState() === 2) { // 2 is SCANNING
+                html5QrcodeScanner.clear().catch(error => {
+                    console.error("Failed to clear scanner on cleanup.", error);
+                });
+            }
+        };
+    }, [onSuccess]);
+
+    return (
+        <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center p-4">
+            <div id="qr-reader" className="w-full max-w-sm aspect-square"></div>
+            <button onClick={onClose} className="mt-6 bg-white text-gray-800 py-2 px-6 rounded-lg font-semibold flex items-center space-x-2">
+                <X size={20} />
+                <span>{t('txFlow.cancel')}</span>
+            </button>
+        </div>
+    );
+};
+
+
 interface TransactionFlowProps {
   user: User;
   transactionType: TransactionType;
-  initialRecipientMobile?: string;
   onClose: () => void;
 }
 
-type FlowStep = 'details' | 'pin' | 'status';
+type FlowStep = 'recipient' | 'amount' | 'pin' | 'status';
 
 const getUserInitials = (name: string) => {
     if (!name) return '?';
@@ -38,12 +92,11 @@ const getUserInitials = (name: string) => {
 };
 
 
-const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType, initialRecipientMobile = '', onClose }) => {
-  const [step, setStep] = useState<FlowStep>('details');
-  const [recipientMobile, setRecipientMobile] = useState(initialRecipientMobile);
+const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType, onClose }) => {
+  const [step, setStep] = useState<FlowStep>('recipient');
+  const [recipientMobile, setRecipientMobile] = useState('');
   const [recipient, setRecipient] = useState<Partial<User> | null>(null);
   const [amount, setAmount] = useState('');
-  const [reference, setReference] = useState('');
   const [pin, setPin] = useState('');
   const [operator, setOperator] = useState('Grameenphone');
   const [error, setError] = useState('');
@@ -69,7 +122,7 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
 
     useEffect(() => {
         const fetchContacts = async () => {
-            if (transactionType !== TransactionType.MOBILE_RECHARGE) {
+            if (step === 'recipient' && transactionType !== TransactionType.MOBILE_RECHARGE) {
                 setIsFetchingContacts(true);
                 try {
                     const recipientType = getRecipientType();
@@ -83,7 +136,7 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
             }
         };
         fetchContacts();
-    }, [transactionType]);
+    }, [step, transactionType]);
     
     // Cleanup timers on unmount or step change
     useEffect(() => {
@@ -96,17 +149,19 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
 
   const getRecipientLabel = () => {
     if (transactionType === TransactionType.CASH_OUT) return t('txFlow.recipientLabel_CASH_OUT');
-    if (transactionType === TransactionType.CASH_IN) { // Can only be initiated by Agent
-        return t('txFlow.recipientLabel_CASH_IN');
+    if (transactionType === TransactionType.CASH_IN) {
+        if (user.userType === UserType.AGENT) {
+             return t('txFlow.recipientLabel_CASH_IN');
+        }
+        return t('txFlow.recipientLabel_CASH_OUT'); // Personal user cashing in FROM an agent
     }
     if (transactionType === TransactionType.MOBILE_RECHARGE) return t('txFlow.recipientLabel_MOBILE_RECHARGE');
-    if (transactionType === TransactionType.REQUEST_MONEY) return t('txFlow.recipientLabel_REQUEST_MONEY');
     return t('txFlow.recipientLabel_SEND_MONEY');
   };
   
   const getRecipientType = () => {
       if(user.userType === UserType.PERSONAL) {
-          if (transactionType === TransactionType.CASH_OUT || transactionType === TransactionType.REQUEST_MONEY) {
+          if (transactionType === TransactionType.CASH_OUT || transactionType === TransactionType.CASH_IN) {
             return UserType.AGENT;
           }
           return UserType.PERSONAL;
@@ -124,7 +179,7 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
     setError('');
 
     try {
-        const result = await api.performTransaction(transactionType, user.id, recipientMobile, Number(amount), pin, reference);
+        const result = await api.performTransaction(transactionType, user.id, recipientMobile, Number(amount), pin);
         setTransactionResult(result);
         if(navigator.vibrate) navigator.vibrate(100);
         setStep('status');
@@ -159,40 +214,32 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
     setIsLoading(true);
 
     try {
-        // 1. Validate Recipient
+      if (step === 'recipient') {
         if (!recipientMobile) throw new Error("Please enter a mobile number.");
         
-        let foundUser;
         if (transactionType === TransactionType.MOBILE_RECHARGE) {
-            foundUser = { name: `${operator} Recharge`, mobile: recipientMobile };
+             setRecipient({ name: `${operator} Recharge`, mobile: recipientMobile });
         } else {
-            foundUser = await api.getUserByMobile(recipientMobile);
+            const foundUser = await api.getUserByMobile(recipientMobile);
             if (!foundUser) throw new Error(`User with mobile ${recipientMobile} not found.`);
             if(foundUser.id === user.id) throw new Error("You cannot transact with yourself.");
-            
-            const expectedRecipientType = getRecipientType();
-            if (foundUser.userType !== expectedRecipientType) {
-                 throw new Error(`Invalid recipient type. Expected a ${expectedRecipientType.toLowerCase()} account.`);
-            }
+            if (foundUser.userType !== getRecipientType()) throw new Error(`Invalid recipient type. Expected a ${getRecipientType().toLowerCase()} account.`);
+            setRecipient(foundUser);
         }
-        setRecipient(foundUser);
-
-        // 2. Validate Amount
+        setStep('amount');
+      } else if (step === 'amount') {
         if (Number(amount) <= 0) throw new Error("Amount must be greater than zero.");
-        if (transactionType !== TransactionType.REQUEST_MONEY && Number(amount) > user.balance) {
-            throw new Error("Insufficient balance.");
+        if (transactionType !== TransactionType.CASH_IN || user.userType === UserType.AGENT) {
+            if (Number(amount) > user.balance) throw new Error("Insufficient balance.");
         }
-
-        // 3. Proceed to PIN
         setStep('pin');
-
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
-
 
     const handleKeyPress = (key: string) => {
         if (isLoading || pin.length >= 4 || isPinLocked) return;
@@ -202,13 +249,6 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
             setError(''); // Clear error on backspace
         } else {
             setPin(p => p + key);
-        }
-    };
-    
-    const handlePinClear = () => {
-        if (pin.length > 0) {
-            setPin('');
-            setError('');
         }
     };
 
@@ -275,23 +315,34 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
      c.mobile.includes(recipientMobile))
   );
 
-  const renderDetailsStep = () => (
+  const renderRecipientStep = () => (
     <div className="space-y-4">
-      {/* Recipient Input */}
       <div 
         className="relative"
-        onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setShowContacts(false); }}}
+        onBlur={(e) => {
+            // Hide dropdown if focus moves outside of this container
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setShowContacts(false);
+            }
+        }}
       >
         <Input 
             label={getRecipientLabel()} 
             type="tel" 
             value={recipientMobile} 
-            onChange={e => { setRecipientMobile(e.target.value); if (!showContacts) setShowContacts(true); }} 
+            onChange={e => {
+                setRecipientMobile(e.target.value);
+                if (!showContacts) setShowContacts(true);
+            }} 
             onFocus={() => setShowContacts(true)}
             placeholder={t('txFlow.recipientPlaceholder')}
             leftIcon={<Smartphone size={16} className="text-gray-400"/>}
-            rightIcon={ transactionType !== TransactionType.MOBILE_RECHARGE && 
-                <button onClick={() => setIsScannerVisible(true)} className="text-primary-500 hover:text-primary-700 p-1"><QrCode size={20} /></button>
+            rightIcon={
+            transactionType !== TransactionType.MOBILE_RECHARGE && (
+                <button onClick={() => setIsScannerVisible(true)} className="text-primary-500 hover:text-primary-700 p-1">
+                <QrCode size={20} />
+                </button>
+            )
             }
         />
         {showContacts && (isFetchingContacts || filteredContacts.length > 0) && (
@@ -300,8 +351,12 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
                     <div className="p-4 text-center text-sm text-gray-500">Loading contacts...</div>
                 ) : (
                     filteredContacts.map(contact => (
-                        <button key={contact.id} type="button" onClick={() => handleContactSelect(contact)}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-3">
+                        <button
+                            key={contact.id}
+                            type="button"
+                            onClick={() => handleContactSelect(contact)}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-3"
+                        >
                             <div className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold text-sm overflow-hidden flex-shrink-0">
                                 {contact.photoBase64 ? <img src={contact.photoBase64} alt={contact.name} className="w-full h-full object-cover" /> : getUserInitials(contact.name)}
                             </div>
@@ -315,48 +370,60 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
             </div>
         )}
       </div>
-
-      {/* Operator for Mobile Recharge */}
       {transactionType === TransactionType.MOBILE_RECHARGE && (
         <div>
            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('txFlow.operatorLabel')}</label>
             <div className="relative">
                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Wifi size={16} className="text-gray-400"/></div>
-                <select value={operator} onChange={e => setOperator(e.target.value)}
-                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <option>Grameenphone</option><option>Robi</option><option>Banglalink</option><option>Teletalk</option>
+                <select 
+                    value={operator} 
+                    onChange={e => setOperator(e.target.value)}
+                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                    <option>Grameenphone</option>
+                    <option>Robi</option>
+                    <option>Banglalink</option>
+                    <option>Teletalk</option>
                 </select>
             </div>
         </div>
       )}
-
-      {/* Amount Input */}
-      <div className="space-y-1">
-          <Input 
-              label={t('txFlow.amountLabel')} 
-              type="number" 
-              value={amount} 
-              onChange={e => setAmount(e.target.value)} 
-              placeholder="0.00"
-              leftIcon={<span className="text-gray-400 font-bold">৳</span>}
-          />
-          {transactionType !== TransactionType.REQUEST_MONEY &&
-              <p className="text-xs text-right text-gray-500 pr-1">{t('txFlow.availableBalance', { balance: user.balance.toFixed(2) })}</p>
-          }
-      </div>
-
-       {/* Reference Input */}
-       <Input 
-          label={t('txFlow.referenceOptional')}
-          type="text" 
-          value={reference} 
-          onChange={e => setReference(e.target.value)} 
-          placeholder="Add a note..."
-          leftIcon={<Edit2 size={16} className="text-gray-400" />}
-      />
     </div>
   );
 
+  const renderAmountStep = () => (
+    <div className="space-y-6">
+        <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center space-x-3">
+            <div className="w-12 h-12 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold text-lg overflow-hidden flex-shrink-0">
+                {recipient?.photoBase64 ? (
+                    <img src={recipient.photoBase64} alt={recipient.name} className="w-full h-full object-cover" />
+                ) : (
+                    getUserInitials(recipient?.name || '')
+                )}
+            </div>
+            <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('txFlow.sendingTo')}:</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">{recipient?.name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-mono">{recipient?.mobile}</p>
+            </div>
+        </div>
+        <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center block">{t('txFlow.amountLabel')}</label>
+            <div className="relative border-b-2 border-gray-200 dark:border-gray-600 focus-within:border-primary-500">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-3xl font-semibold text-gray-400">৳</span>
+                <input 
+                    type="number"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    placeholder="0"
+                    className="w-full bg-transparent text-center text-5xl font-bold py-2 focus:outline-none text-gray-800 dark:text-white appearance-none"
+                    autoFocus
+                />
+            </div>
+            <p className="text-xs text-center text-gray-500">{t('txFlow.availableBalance', { balance: user.balance.toFixed(2) })}</p>
+        </div>
+    </div>
+  );
 
     const renderPinStep = () => (
         <div className="-mx-6 -mt-6 -mb-6 flex flex-col justify-between" style={{ minHeight: '500px', maxHeight: '500px' }}>
@@ -383,7 +450,7 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
                             <div className="w-8 h-8 border-4 border-t-primary-500 border-gray-200 rounded-full animate-spin"></div>
                         </div>
                     ) : (
-                        <PinInput value={pin} isShaking={isPinShaking} onClick={handlePinClear} />
+                        <PinInput value={pin} isShaking={isPinShaking} />
                     )}
                     <div className="h-5">
                         {error && <p className={`text-sm text-center ${isPinLocked ? 'text-lg font-semibold text-red-600' : 'text-red-500'}`}>{error}</p>}
@@ -424,14 +491,7 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
 
   const renderStatusStep = () => (
     <div className="text-center space-y-4 py-4">
-      {transactionResult && transactionResult.status === TransactionStatus.PENDING ? (
-         <>
-          <Clock size={48} className="mx-auto text-yellow-500" />
-          <h3 className="text-lg font-semibold mt-2">{t('txFlow.statusPendingTitle')}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{t('txFlow.statusPendingMessage', { amount: transactionResult.amount.toFixed(2), recipient: recipient?.name || '' })}</p>
-          <Button onClick={onClose} className="w-full mt-4">{t('txFlow.done')}</Button>
-        </>
-      ) : transactionResult && transactionResult.status === TransactionStatus.SUCCESSFUL ? (
+      {transactionResult ? (
         <>
           <div ref={receiptRef} className="bg-white dark:bg-gray-800 p-4 rounded-lg">
               <Logo className="mx-auto mb-4" />
@@ -460,26 +520,39 @@ const TransactionFlow: React.FC<TransactionFlowProps> = ({ user, transactionType
           <XCircle size={56} className="mx-auto text-red-500" />
           <h3 className="text-xl font-semibold">{t('txFlow.statusFailedTitle')}</h3>
           <p className="text-gray-600 dark:text-gray-400">{error || t('txFlow.statusFailedMessage')}</p>
-          <Button onClick={onClose} variant="secondary">{t('txFlow.tryAgain')}</Button>
+          <Button onClick={() => { setStep('pin'); setPin(''); setError(''); }} variant="secondary">{t('txFlow.tryAgain')}</Button>
         </>
       )}
     </div>
   );
 
+  const renderContent = () => {
+    switch (step) {
+      case 'recipient':
+        return renderRecipientStep();
+      case 'amount':
+        return renderAmountStep();
+      case 'pin':
+        return renderPinStep();
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
         <Modal isOpen={!isScannerVisible} onClose={onClose} title={getTitle()}>
-             {step === 'details' && (
+             {step !== 'pin' && step !== 'status' ? (
                  <div className="space-y-4">
-                     {renderDetailsStep()}
+                     {renderContent()}
                      {error && <p className="text-red-500 text-sm text-center py-2">{error}</p>}
                      <Button onClick={handleNext} isLoading={isLoading} className="mt-4">
                          {t('txFlow.next')} <ArrowRight size={16} className="ml-2" />
                      </Button>
                  </div>
+             ) : (
+                renderContent() || renderStatusStep()
              )}
-            {step === 'pin' && renderPinStep()}
-            {step === 'status' && renderStatusStep()}
         </Modal>
         {isScannerVisible && (
             <QrScanner
